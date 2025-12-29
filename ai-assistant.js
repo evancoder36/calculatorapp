@@ -4,7 +4,7 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
 
@@ -228,33 +228,28 @@ Guidelines:
     }
 
     async callGeminiAPI(message) {
-        // Build conversation context
-        const contents = [];
+        // Build the prompt with context
+        let fullPrompt = this.systemPrompt + "\n\n";
 
-        // Add chat history for context (last 10 exchanges)
-        const recentHistory = this.chatHistory.slice(-10);
+        // Add recent chat history
+        const recentHistory = this.chatHistory.slice(-6);
         for (const msg of recentHistory) {
-            contents.push({
-                role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }]
-            });
+            if (msg.role === 'user') {
+                fullPrompt += `User: ${msg.content}\n`;
+            } else {
+                fullPrompt += `Assistant: ${msg.content}\n`;
+            }
         }
 
-        // Add current message
-        contents.push({
-            role: 'user',
-            parts: [{ text: message }]
-        });
+        // Add current question
+        fullPrompt += `User: ${message}\nAssistant:`;
 
         const requestBody = {
-            contents: contents,
-            systemInstruction: {
-                parts: [{ text: this.systemPrompt }]
-            },
+            contents: [{
+                parts: [{ text: fullPrompt }]
+            }],
             generationConfig: {
                 temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
                 maxOutputTokens: 2048,
             }
         };
@@ -269,6 +264,7 @@ Guidelines:
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
+            console.error('API Error:', errorData);
             const errorMessage = errorData.error?.message || `HTTP ${response.status}`;
             throw new Error(errorMessage);
         }
@@ -276,6 +272,7 @@ Guidelines:
         const data = await response.json();
 
         if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+            console.error('Invalid response:', data);
             throw new Error('No response generated');
         }
 
