@@ -238,7 +238,7 @@ class Calculator {
                 document.getElementById(`${tab}-panel`).classList.add('active');
 
                 // Adjust container width for different modes
-                container.classList.remove('scientific-mode', 'graph-mode', 'history-mode', 'converter-mode');
+                container.classList.remove('scientific-mode', 'graph-mode', 'history-mode', 'converter-mode', 'currency-mode');
                 if (tab === 'scientific') {
                     container.classList.add('scientific-mode');
                 } else if (tab === 'graph') {
@@ -251,6 +251,8 @@ class Calculator {
                     this.renderHistory(); // Refresh timestamps
                 } else if (tab === 'converter') {
                     container.classList.add('converter-mode');
+                } else if (tab === 'currency') {
+                    container.classList.add('currency-mode');
                 }
             });
         });
