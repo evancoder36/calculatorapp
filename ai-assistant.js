@@ -4,21 +4,25 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
 
-        this.systemPrompt = `You are a helpful math and science assistant integrated into a calculator app.
-Your role is to:
-- Solve mathematical problems step by step
-- Explain scientific concepts clearly
-- Help with equations, calculus, algebra, geometry, physics, chemistry, and more
-- Provide formulas and show your work
-- Keep responses concise but thorough
-- Use simple formatting (no complex markdown)
-- When showing math, use plain text notation (e.g., x^2 for x squared, sqrt() for square root)
+        this.systemPrompt = `You are a friendly and helpful math and science tutor named "Evan AI" integrated into a calculator app called "The Evan Multiuse Calculator".
 
-Be friendly, educational, and precise. If you're unsure about something, say so.`;
+Your expertise includes:
+- Mathematics: algebra, calculus, geometry, trigonometry, statistics
+- Physics: mechanics, thermodynamics, electromagnetism, quantum physics
+- Chemistry: reactions, equations, periodic table, organic chemistry
+- General science questions
+
+Guidelines:
+- Solve problems step by step, showing your work clearly
+- Use simple notation: x^2 for squared, sqrt() for square root, pi for π
+- Keep explanations concise but thorough
+- Be encouraging and educational
+- If a question is unclear, ask for clarification
+- For complex equations, break them down into smaller steps`;
 
         this.init();
     }
@@ -33,6 +37,7 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         const input = document.getElementById('aiInput');
         const settingsBtn = document.getElementById('aiSettingsBtn');
         const saveKeyBtn = document.getElementById('saveApiKeyBtn');
+        const clearChatBtn = document.getElementById('clearChatBtn');
 
         if (sendBtn) {
             sendBtn.addEventListener('click', () => this.sendMessage());
@@ -45,6 +50,11 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
                     this.sendMessage();
                 }
             });
+
+            // Auto-resize input
+            input.addEventListener('input', () => {
+                this.updateSendButton();
+            });
         }
 
         if (settingsBtn) {
@@ -55,26 +65,46 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
             saveKeyBtn.addEventListener('click', () => this.saveApiKey());
         }
 
+        if (clearChatBtn) {
+            clearChatBtn.addEventListener('click', () => this.clearChat());
+        }
+
         // Suggestion buttons
         document.querySelectorAll('.ai-suggestion').forEach(btn => {
             btn.addEventListener('click', () => {
                 const query = btn.dataset.query;
                 document.getElementById('aiInput').value = query;
+                this.updateSendButton();
                 this.sendMessage();
             });
         });
     }
 
+    updateSendButton() {
+        const input = document.getElementById('aiInput');
+        const sendBtn = document.getElementById('aiSendBtn');
+        if (input && sendBtn) {
+            if (input.value.trim()) {
+                sendBtn.classList.add('active');
+            } else {
+                sendBtn.classList.remove('active');
+            }
+        }
+    }
+
     checkApiKey() {
         const setup = document.getElementById('aiSetup');
         const settingsBtn = document.getElementById('aiSettingsBtn');
+        const keyStatus = document.getElementById('apiKeyStatus');
 
         if (!this.apiKey) {
-            setup.classList.add('show');
-            settingsBtn.textContent = 'API Key';
+            if (setup) setup.classList.add('show');
+            if (settingsBtn) settingsBtn.innerHTML = '<span class="key-icon">🔑</span> Add Key';
+            if (keyStatus) keyStatus.textContent = 'Not configured';
         } else {
-            setup.classList.remove('show');
-            settingsBtn.textContent = 'Change Key';
+            if (setup) setup.classList.remove('show');
+            if (settingsBtn) settingsBtn.innerHTML = '<span class="key-icon">✓</span> Key Set';
+            if (keyStatus) keyStatus.textContent = 'Ready';
         }
     }
 
@@ -83,7 +113,11 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         setup.classList.toggle('show');
 
         if (setup.classList.contains('show')) {
-            document.getElementById('apiKeyInput').value = this.apiKey;
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            if (apiKeyInput) {
+                apiKeyInput.value = this.apiKey;
+                apiKeyInput.focus();
+            }
         }
     }
 
@@ -95,10 +129,52 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
             this.apiKey = key;
             localStorage.setItem('geminiApiKey', key);
             this.checkApiKey();
-            this.showSuccess('API key saved successfully!');
+            this.toggleSettings();
+            this.addSystemMessage('API key saved! You can now ask questions.', 'success');
         } else {
-            this.showError('Please enter a valid API key');
+            this.addSystemMessage('Please enter a valid API key', 'error');
         }
+    }
+
+    clearChat() {
+        const chat = document.getElementById('aiChat');
+        this.chatHistory = [];
+
+        chat.innerHTML = `
+            <div class="ai-welcome">
+                <div class="ai-avatar-large">🧮</div>
+                <h4>Hi! I'm Evan AI</h4>
+                <p>Your math & science assistant. Ask me anything!</p>
+                <div class="ai-suggestions">
+                    <button class="ai-suggestion" data-query="Solve x² + 5x + 6 = 0">
+                        <span class="suggestion-icon">📐</span>
+                        <span>Solve equations</span>
+                    </button>
+                    <button class="ai-suggestion" data-query="Explain the Pythagorean theorem with an example">
+                        <span class="suggestion-icon">📚</span>
+                        <span>Explain theorems</span>
+                    </button>
+                    <button class="ai-suggestion" data-query="What is the derivative of sin(x)?">
+                        <span class="suggestion-icon">∫</span>
+                        <span>Calculus help</span>
+                    </button>
+                    <button class="ai-suggestion" data-query="Explain Newton's laws of motion simply">
+                        <span class="suggestion-icon">🚀</span>
+                        <span>Physics concepts</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Re-bind suggestion buttons
+        document.querySelectorAll('.ai-suggestion').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const query = btn.dataset.query;
+                document.getElementById('aiInput').value = query;
+                this.updateSendButton();
+                this.sendMessage();
+            });
+        });
     }
 
     async sendMessage() {
@@ -108,7 +184,7 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         if (!message || this.isProcessing) return;
 
         if (!this.apiKey) {
-            this.showError('Please set up your API key first');
+            this.addSystemMessage('Please set up your API key first', 'error');
             this.toggleSettings();
             return;
         }
@@ -122,6 +198,7 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         // Add user message to chat
         this.addMessage(message, 'user');
         input.value = '';
+        this.updateSendButton();
 
         // Show typing indicator
         this.showTyping();
@@ -135,58 +212,51 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
             this.removeTyping();
             console.error('AI Error:', error);
 
-            if (error.message.includes('API key')) {
-                this.showError('Invalid API key. Please check your key and try again.');
-            } else if (error.message.includes('quota')) {
-                this.showError('API quota exceeded. Please try again later.');
-            } else {
-                this.showError('Failed to get response. Please try again.');
+            let errorMsg = 'Something went wrong. Please try again.';
+            if (error.message.includes('API key') || error.message.includes('API_KEY')) {
+                errorMsg = 'Invalid API key. Please check your key in settings.';
+            } else if (error.message.includes('quota') || error.message.includes('429')) {
+                errorMsg = 'Rate limit reached. Please wait a moment and try again.';
+            } else if (error.message.includes('network') || error.message.includes('fetch')) {
+                errorMsg = 'Network error. Please check your connection.';
             }
+
+            this.addSystemMessage(errorMsg, 'error');
         }
 
         this.isProcessing = false;
     }
 
     async callGeminiAPI(message) {
-        // Add to chat history for context
-        this.chatHistory.push({
+        // Build conversation context
+        const contents = [];
+
+        // Add chat history for context (last 10 exchanges)
+        const recentHistory = this.chatHistory.slice(-10);
+        for (const msg of recentHistory) {
+            contents.push({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+            });
+        }
+
+        // Add current message
+        contents.push({
             role: 'user',
             parts: [{ text: message }]
         });
 
-        // Keep only last 10 messages for context
-        if (this.chatHistory.length > 20) {
-            this.chatHistory = this.chatHistory.slice(-20);
-        }
-
         const requestBody = {
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: this.systemPrompt }]
-                },
-                {
-                    role: 'model',
-                    parts: [{ text: 'I understand. I\'m ready to help with math and science questions.' }]
-                },
-                ...this.chatHistory
-            ],
+            contents: contents,
+            systemInstruction: {
+                parts: [{ text: this.systemPrompt }]
+            },
             generationConfig: {
                 temperature: 0.7,
                 topK: 40,
                 topP: 0.95,
-                maxOutputTokens: 1024,
-            },
-            safetySettings: [
-                {
-                    category: 'HARM_CATEGORY_HARASSMENT',
-                    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-                },
-                {
-                    category: 'HARM_CATEGORY_HATE_SPEECH',
-                    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-                }
-            ]
+                maxOutputTokens: 2048,
+            }
         };
 
         const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
@@ -199,65 +269,97 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            if (response.status === 400) {
-                throw new Error('Invalid API key');
-            } else if (response.status === 429) {
-                throw new Error('API quota exceeded');
-            }
-            throw new Error(errorData.error?.message || 'API request failed');
+            const errorMessage = errorData.error?.message || `HTTP ${response.status}`;
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
 
         if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            throw new Error('Invalid response from API');
+            throw new Error('No response generated');
         }
 
         const assistantMessage = data.candidates[0].content.parts[0].text;
 
-        // Add to chat history
-        this.chatHistory.push({
-            role: 'model',
-            parts: [{ text: assistantMessage }]
-        });
+        // Save to chat history
+        this.chatHistory.push({ role: 'user', content: message });
+        this.chatHistory.push({ role: 'assistant', content: assistantMessage });
 
         return assistantMessage;
     }
 
     addMessage(content, role) {
         const chat = document.getElementById('aiChat');
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `ai-message ${role}`;
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'ai-message-content';
-        contentDiv.innerHTML = this.formatMessage(content);
+        if (role === 'user') {
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-content">${this.escapeHtml(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+                <div class="message-avatar user-avatar">You</div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-avatar ai-avatar">AI</div>
+                <div class="message-bubble">
+                    <div class="message-content">${this.formatMessage(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+        }
 
-        messageDiv.appendChild(contentDiv);
         chat.appendChild(messageDiv);
-
-        // Scroll to bottom
         chat.scrollTop = chat.scrollHeight;
     }
 
+    addSystemMessage(content, type = 'info') {
+        const chat = document.getElementById('aiChat');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `ai-system-message ${type}`;
+        messageDiv.innerHTML = `
+            <span class="system-icon">${type === 'error' ? '⚠️' : type === 'success' ? '✓' : 'ℹ️'}</span>
+            <span>${content}</span>
+        `;
+
+        chat.appendChild(messageDiv);
+        chat.scrollTop = chat.scrollHeight;
+
+        // Auto remove after delay
+        setTimeout(() => {
+            messageDiv.style.opacity = '0';
+            setTimeout(() => messageDiv.remove(), 300);
+        }, type === 'error' ? 5000 : 3000);
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     formatMessage(text) {
-        // Escape HTML
-        let formatted = text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+        // Escape HTML first
+        let formatted = this.escapeHtml(text);
 
         // Format code blocks
         formatted = formatted.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-            return `<pre><code>${code.trim()}</code></pre>`;
+            return `<pre class="code-block"><code>${code.trim()}</code></pre>`;
         });
 
         // Format inline code
-        formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+        formatted = formatted.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
 
         // Format bold
         formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+        // Format italic
+        formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
         // Format line breaks
         formatted = formatted.replace(/\n/g, '<br>');
@@ -273,8 +375,9 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         typingDiv.id = 'aiTyping';
 
         typingDiv.innerHTML = `
-            <div class="ai-message-content">
-                <div class="ai-typing">
+            <div class="message-avatar ai-avatar">AI</div>
+            <div class="message-bubble typing-bubble">
+                <div class="typing-indicator">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -291,41 +394,6 @@ Be friendly, educational, and precise. If you're unsure about something, say so.
         if (typing) {
             typing.remove();
         }
-    }
-
-    showError(message) {
-        const chat = document.getElementById('aiChat');
-
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'ai-error';
-        errorDiv.textContent = message;
-
-        chat.appendChild(errorDiv);
-        chat.scrollTop = chat.scrollHeight;
-
-        // Remove after 5 seconds
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
-    }
-
-    showSuccess(message) {
-        const chat = document.getElementById('aiChat');
-
-        const successDiv = document.createElement('div');
-        successDiv.className = 'ai-error';
-        successDiv.style.background = 'rgba(16, 185, 129, 0.2)';
-        successDiv.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-        successDiv.style.color = '#6ee7b7';
-        successDiv.textContent = message;
-
-        chat.appendChild(successDiv);
-        chat.scrollTop = chat.scrollHeight;
-
-        // Remove after 3 seconds
-        setTimeout(() => {
-            successDiv.remove();
-        }, 3000);
     }
 }
 

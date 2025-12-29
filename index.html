@@ -288,43 +288,71 @@
 
         <!-- AI Assistant Panel -->
         <div class="calculator-panel" id="ai-panel">
+            <!-- AI Header -->
             <div class="ai-header">
-                <h3>AI Math & Science Assistant</h3>
-                <button class="btn btn-secondary btn-small" id="aiSettingsBtn">API Key</button>
+                <div class="ai-header-left">
+                    <div class="ai-header-icon">🤖</div>
+                    <div class="ai-header-info">
+                        <h3>Evan AI</h3>
+                        <span class="ai-status" id="apiKeyStatus">Not configured</span>
+                    </div>
+                </div>
+                <div class="ai-header-actions">
+                    <button class="ai-action-btn" id="clearChatBtn" title="Clear chat">🗑️</button>
+                    <button class="ai-action-btn" id="aiSettingsBtn" title="API Settings">⚙️</button>
+                </div>
             </div>
 
             <!-- API Key Setup (hidden by default) -->
             <div class="ai-setup" id="aiSetup">
-                <div class="ai-setup-content">
-                    <p>Enter your Google Gemini API key to use AI features.</p>
-                    <a href="https://makersuite.google.com/app/apikey" target="_blank" class="ai-link">Get free API key</a>
-                    <div class="ai-key-input">
-                        <input type="password" id="apiKeyInput" class="glass-input" placeholder="Paste your API key here">
-                        <button class="btn btn-plot" id="saveApiKeyBtn">Save</button>
-                    </div>
+                <div class="ai-setup-header">
+                    <span>🔑</span>
+                    <strong>API Key Required</strong>
+                </div>
+                <p>Get a free Google Gemini API key to use the AI assistant.</p>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="ai-get-key-btn">
+                    Get Free API Key →
+                </a>
+                <div class="ai-key-input">
+                    <input type="password" id="apiKeyInput" class="glass-input" placeholder="Paste your API key here...">
+                    <button class="btn btn-save-key" id="saveApiKeyBtn">Save Key</button>
                 </div>
             </div>
 
             <!-- Chat Messages -->
             <div class="ai-chat" id="aiChat">
                 <div class="ai-welcome">
-                    <div class="ai-welcome-icon">🧮</div>
-                    <h4>Ask me anything!</h4>
-                    <p>I can help with math problems, scientific questions, equations, and more.</p>
+                    <div class="ai-avatar-large">🧮</div>
+                    <h4>Hi! I'm Evan AI</h4>
+                    <p>Your math & science assistant. Ask me anything!</p>
                     <div class="ai-suggestions">
-                        <button class="ai-suggestion" data-query="Solve x² + 5x + 6 = 0">Solve equations</button>
-                        <button class="ai-suggestion" data-query="Explain the Pythagorean theorem">Explain theorems</button>
-                        <button class="ai-suggestion" data-query="What is the derivative of sin(x)?">Calculus help</button>
-                        <button class="ai-suggestion" data-query="Explain Newton's laws of motion">Physics concepts</button>
+                        <button class="ai-suggestion" data-query="Solve x² + 5x + 6 = 0">
+                            <span class="suggestion-icon">📐</span>
+                            <span>Solve equations</span>
+                        </button>
+                        <button class="ai-suggestion" data-query="Explain the Pythagorean theorem with an example">
+                            <span class="suggestion-icon">📚</span>
+                            <span>Explain theorems</span>
+                        </button>
+                        <button class="ai-suggestion" data-query="What is the derivative of sin(x)?">
+                            <span class="suggestion-icon">∫</span>
+                            <span>Calculus help</span>
+                        </button>
+                        <button class="ai-suggestion" data-query="Explain Newton's laws of motion simply">
+                            <span class="suggestion-icon">🚀</span>
+                            <span>Physics concepts</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Chat Input -->
             <div class="ai-input-container">
-                <input type="text" id="aiInput" class="glass-input ai-input" placeholder="Ask a math or science question...">
-                <button class="btn btn-equals ai-send-btn" id="aiSendBtn">
-                    <span>→</span>
+                <input type="text" id="aiInput" class="glass-input ai-input" placeholder="Type your question here...">
+                <button class="ai-send-btn" id="aiSendBtn" title="Send message">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
                 </button>
             </div>
         </div>
