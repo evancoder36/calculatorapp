@@ -238,7 +238,7 @@ class Calculator {
                 document.getElementById(`${tab}-panel`).classList.add('active');
 
                 // Adjust container width for different modes
-                container.classList.remove('scientific-mode', 'graph-mode', 'history-mode', 'converter-mode', 'currency-mode');
+                container.classList.remove('scientific-mode', 'graph-mode', 'history-mode', 'converter-mode', 'currency-mode', 'ai-mode');
                 if (tab === 'scientific') {
                     container.classList.add('scientific-mode');
                 } else if (tab === 'graph') {
@@ -253,6 +253,8 @@ class Calculator {
                     container.classList.add('converter-mode');
                 } else if (tab === 'currency') {
                     container.classList.add('currency-mode');
+                } else if (tab === 'ai') {
+                    container.classList.add('ai-mode');
                 }
             });
         });
