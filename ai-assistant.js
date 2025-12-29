@@ -4,7 +4,7 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
 
@@ -228,31 +228,36 @@ Guidelines:
     }
 
     async callGeminiAPI(message) {
-        // Build the prompt with context
-        let fullPrompt = this.systemPrompt + "\n\n";
+        // Build contents array with chat history
+        const contents = [];
 
-        // Add recent chat history
-        const recentHistory = this.chatHistory.slice(-6);
+        // Add chat history for context
+        const recentHistory = this.chatHistory.slice(-10);
         for (const msg of recentHistory) {
-            if (msg.role === 'user') {
-                fullPrompt += `User: ${msg.content}\n`;
-            } else {
-                fullPrompt += `Assistant: ${msg.content}\n`;
-            }
+            contents.push({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+            });
         }
 
-        // Add current question
-        fullPrompt += `User: ${message}\nAssistant:`;
+        // Add current message
+        contents.push({
+            role: 'user',
+            parts: [{ text: message }]
+        });
 
         const requestBody = {
-            contents: [{
-                parts: [{ text: fullPrompt }]
-            }],
+            system_instruction: {
+                parts: [{ text: this.systemPrompt }]
+            },
+            contents: contents,
             generationConfig: {
                 temperature: 0.7,
                 maxOutputTokens: 2048,
             }
         };
+
+        console.log('Sending request to Gemini API...');
 
         const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
             method: 'POST',
@@ -262,17 +267,18 @@ Guidelines:
             body: JSON.stringify(requestBody)
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('API Error:', errorData);
-            const errorMessage = errorData.error?.message || `HTTP ${response.status}`;
+            console.error('API Error Response:', data);
+            const errorMessage = data.error?.message || `HTTP ${response.status}`;
             throw new Error(errorMessage);
         }
 
-        const data = await response.json();
+        console.log('API Response:', data);
 
         if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            console.error('Invalid response:', data);
+            console.error('Invalid response structure:', data);
             throw new Error('No response generated');
         }
 
