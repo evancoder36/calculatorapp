@@ -18,53 +18,127 @@
         }
     </script>
     <style>
-        .user-badge {
+        /* Hide default logo badge - we'll show user info instead */
+        .logo-badge {
+            display: none !important;
+        }
+
+        /* Top bar with logo and user */
+        .top-bar {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .top-bar-logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 100px;
-            z-index: 1000;
+            text-decoration: none;
         }
+
+        .top-bar-logo .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .top-bar-logo .logo-text {
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .user-badge img {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             border: 2px solid #6366f1;
         }
+
         .user-badge .user-name {
             font-size: 14px;
             font-weight: 500;
             color: white;
         }
+
         .user-badge .sign-out {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #94a3b8;
             cursor: pointer;
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 8px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
         .user-badge .sign-out:hover {
             background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
             color: #ef4444;
+        }
+
+        .user-badge .sign-out svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Adjust calculator container to not overlap with top bar */
+        .calculator-container {
+            margin-top: 70px !important;
+        }
+
+        @media (max-width: 500px) {
+            .user-badge .user-name {
+                display: none;
+            }
+            .top-bar-logo .logo-text {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- User Badge -->
-    <div class="user-badge" id="userBadge">
-        <img id="userAvatar" src="" alt="User">
-        <span class="user-name" id="userName"></span>
-        <button class="sign-out" id="signOutBtn">Sign Out</button>
+    <!-- Top Bar with Logo and User -->
+    <div class="top-bar">
+        <a href="index.html" class="top-bar-logo">
+            <div class="logo-icon">E</div>
+            <span class="logo-text">Evan Calculator</span>
+        </a>
+        <div class="user-badge" id="userBadge">
+            <img id="userAvatar" src="" alt="User">
+            <span class="user-name" id="userName"></span>
+            <button class="sign-out" id="signOutBtn" title="Sign Out">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="background-shapes">
