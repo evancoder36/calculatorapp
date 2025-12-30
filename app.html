@@ -1209,17 +1209,24 @@
 
         // Display user info
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing dropdown...');
+
             // Initialize theme
             ThemeManager.init();
 
             const user = authManager.getUser();
             if (user) {
                 // Update all user info displays
-                document.getElementById('userAvatar').src = user.picture;
-                document.getElementById('userName').textContent = user.name;
-                document.getElementById('dropdownAvatar').src = user.picture;
-                document.getElementById('dropdownName').textContent = user.name;
-                document.getElementById('dropdownEmail').textContent = user.email || '';
+                document.getElementById('userAvatar').src = user.picture || '';
+                document.getElementById('userName').textContent = user.name || '';
+
+                var dropdownAvatar = document.getElementById('dropdownAvatar');
+                var dropdownName = document.getElementById('dropdownName');
+                var dropdownEmail = document.getElementById('dropdownEmail');
+
+                if (dropdownAvatar) dropdownAvatar.src = user.picture || '';
+                if (dropdownName) dropdownName.textContent = user.name || '';
+                if (dropdownEmail) dropdownEmail.textContent = user.email || '';
             }
 
             // Function to update premium UI
@@ -1258,11 +1265,20 @@
             const profileTrigger = document.getElementById('profileTrigger');
             const profileDropdown = document.getElementById('profileDropdown');
 
-            profileTrigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                profileTrigger.classList.toggle('active');
-                profileDropdown.classList.toggle('show');
-            });
+            console.log('Profile trigger:', profileTrigger);
+            console.log('Profile dropdown:', profileDropdown);
+
+            if (profileTrigger && profileDropdown) {
+                profileTrigger.addEventListener('click', function(e) {
+                    console.log('Profile clicked!');
+                    e.stopPropagation();
+                    profileTrigger.classList.toggle('active');
+                    profileDropdown.classList.toggle('show');
+                });
+                console.log('Dropdown click handler attached');
+            } else {
+                console.error('Could not find profile elements!');
+            }
 
             // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
