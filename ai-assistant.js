@@ -212,16 +212,8 @@ Guidelines:
             this.removeTyping();
             console.error('AI Error:', error);
 
-            let errorMsg = 'Something went wrong. Please try again.';
-            if (error.message.includes('API key') || error.message.includes('API_KEY')) {
-                errorMsg = 'Invalid API key. Please check your key in settings.';
-            } else if (error.message.includes('quota') || error.message.includes('429')) {
-                errorMsg = 'Rate limit reached. Please wait a moment and try again.';
-            } else if (error.message.includes('network') || error.message.includes('fetch')) {
-                errorMsg = 'Network error. Please check your connection.';
-            }
-
-            this.addSystemMessage(errorMsg, 'error');
+            // Show the actual error message for debugging
+            this.addSystemMessage('Error: ' + error.message, 'error');
         }
 
         this.isProcessing = false;
