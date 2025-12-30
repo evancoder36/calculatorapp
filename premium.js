@@ -31,10 +31,10 @@ class PremiumManager {
 
     // Check Supabase for premium status (call this after page loads)
     async syncWithSupabase(userId) {
-        if (!userId || typeof supabase === 'undefined') return false;
+        if (!userId || typeof supabaseClient === 'undefined') return false;
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('premium_users')
                 .select('*')
                 .eq('user_id', userId)
@@ -80,10 +80,10 @@ class PremiumManager {
         localStorage.setItem(PREMIUM_CONFIG.storageKey, JSON.stringify(this.premiumData));
 
         // Save to Supabase if user is logged in
-        if (userId && typeof supabase !== 'undefined') {
+        if (userId && typeof supabaseClient !== 'undefined') {
             try {
                 const user = authManager.getUser();
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('premium_users')
                     .upsert({
                         user_id: userId,

@@ -395,11 +395,11 @@
                 var user = authManager.getUser();
                 var userId = user ? user.id : null;
                 debug('User ID: ' + userId);
-                debug('Supabase: ' + (typeof supabase !== 'undefined'));
+                debug('Supabase: ' + (typeof supabaseClient !== 'undefined'));
 
-                if (userId && typeof supabase !== 'undefined') {
+                if (userId && typeof supabaseClient !== 'undefined') {
                     debug('Checking database...');
-                    supabase
+                    supabaseClient
                         .from('premium_users')
                         .select('*')
                         .eq('user_id', userId)
