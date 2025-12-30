@@ -4,7 +4,7 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
 
