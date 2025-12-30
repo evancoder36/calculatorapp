@@ -335,7 +335,6 @@
 
             <a href="#" class="upgrade-btn" id="upgradeBtn">Upgrade Now</a>
             <a href="app.html" class="back-link">Back to Calculator</a>
-            <div id="debugInfo" style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12px; color: #888; text-align: left;"></div>
         </div>
 
         <!-- Success Card -->
@@ -356,12 +355,6 @@
         document.documentElement.setAttribute('data-theme', savedTheme);
 
         document.addEventListener('DOMContentLoaded', function() {
-            var debugInfo = document.getElementById('debugInfo');
-            function debug(msg) {
-                if (debugInfo) debugInfo.innerHTML += msg + '<br>';
-                console.log(msg);
-            }
-
             try {
                 var urlParams = new URLSearchParams(window.location.search);
                 var upgradeCard = document.getElementById('upgradeCard');
@@ -394,18 +387,14 @@
                 // Check Supabase for premium status
                 var user = authManager.getUser();
                 var userId = user ? user.id : null;
-                debug('User ID: ' + userId);
-                debug('Supabase: ' + (typeof supabaseClient !== 'undefined'));
 
                 if (userId && typeof supabaseClient !== 'undefined') {
-                    debug('Checking database...');
                     supabaseClient
                         .from('premium_users')
                         .select('*')
                         .eq('user_id', userId)
                         .single()
                         .then(function(result) {
-                            debug('Data: ' + JSON.stringify(result.data));
                             if (result.data && result.data.is_premium) {
                                 alreadyPremium.classList.add('show');
                                 upgradeBtn.textContent = 'Go to Calculator';
@@ -414,15 +403,11 @@
                                     isPremium: true,
                                     userId: userId
                                 }));
-                                debug('Premium activated!');
                             }
-                        })
-                        .catch(function(err) {
-                            debug('Error: ' + err);
                         });
                 }
             } catch(e) {
-                debug('JS Error: ' + e.message);
+                console.error('Upgrade page error:', e);
             }
         });
     </script>
