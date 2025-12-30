@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Evan Multiuse Calculator</title>
+    <title>The Evan Multiuse Calculator v2</title>
     <link rel="stylesheet" href="styles.css">
     <!-- Math.js for advanced calculations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
@@ -745,7 +745,7 @@
         </a>
         <div class="user-badge" id="userBadge">
             <!-- Profile Dropdown Trigger -->
-            <div class="profile-trigger" id="profileTrigger">
+            <div class="profile-trigger" id="profileTrigger" onclick="document.getElementById('profileDropdown').classList.toggle('show'); this.classList.toggle('active');">
                 <img id="userAvatar" src="" alt="User">
                 <span class="user-name" id="userName"></span>
                 <svg class="dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
