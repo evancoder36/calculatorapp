@@ -352,95 +352,77 @@
 
     <script>
         // Theme handling
-        const savedTheme = localStorage.getItem('evan_calc_theme') || 'dark';
+        var savedTheme = localStorage.getItem('evan_calc_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
         document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const upgradeCard = document.getElementById('upgradeCard');
-            const successCard = document.getElementById('successCard');
-            const alreadyPremium = document.getElementById('alreadyPremium');
-            const upgradeBtn = document.getElementById('upgradeBtn');
+            var debugInfo = document.getElementById('debugInfo');
+            function debug(msg) {
+                if (debugInfo) debugInfo.innerHTML += msg + '<br>';
+                console.log(msg);
+            }
 
-            // Check for success parameter (returning from Stripe)
-            if (urlParams.get('success') === 'true') {
-                // Get user ID if available
-                const user = authManager.getUser();
-                const userId = user ? user.id : 'anonymous';
+            try {
+                var urlParams = new URLSearchParams(window.location.search);
+                var upgradeCard = document.getElementById('upgradeCard');
+                var successCard = document.getElementById('successCard');
+                var alreadyPremium = document.getElementById('alreadyPremium');
+                var upgradeBtn = document.getElementById('upgradeBtn');
 
-                // Set premium status (saves to both localStorage and Firebase)
-                premiumManager.setPremium(userId).then(() => {
-                    // Show success card
+                // Set Stripe Payment Link FIRST so button always works
+                upgradeBtn.href = 'https://buy.stripe.com/test_5kQbJ0dMid9T5eb1N64Ni00';
+
+                // Check for success parameter (returning from Stripe)
+                if (urlParams.get('success') === 'true') {
+                    var user = authManager.getUser();
+                    var userId = user ? user.id : 'anonymous';
+                    premiumManager.setPremium(userId);
                     upgradeCard.classList.add('hide');
                     successCard.classList.add('show');
-                });
+                    window.history.replaceState({}, document.title, 'upgrade.html');
+                    return;
+                }
 
-                // Clean up URL
-                window.history.replaceState({}, document.title, 'upgrade.html');
-                return;
-            }
+                // Check if already premium locally
+                if (premiumManager.isPremium()) {
+                    alreadyPremium.classList.add('show');
+                    upgradeBtn.textContent = 'Go to Calculator';
+                    upgradeBtn.href = 'app.html';
+                    return;
+                }
 
-            // Check if already premium locally first
-            if (premiumManager.isPremium()) {
-                alreadyPremium.classList.add('show');
-                upgradeBtn.textContent = 'Go to Calculator';
-                upgradeBtn.href = 'app.html';
-                return;
-            }
+                // Check Supabase for premium status
+                var user = authManager.getUser();
+                var userId = user ? user.id : null;
+                debug('User ID: ' + userId);
+                debug('Supabase: ' + (typeof supabase !== 'undefined'));
 
-            // Debug info element
-            const debugInfo = document.getElementById('debugInfo');
-            function debug(msg) {
-                debugInfo.innerHTML += msg + '<br>';
-            }
-
-            // Then check Supabase for premium status (in case user paid on another device)
-            const user = authManager.getUser();
-            debug('User ID: ' + (user?.id || 'not found'));
-            debug('Supabase loaded: ' + (typeof supabase !== 'undefined'));
-
-            if (user && user.id) {
-                // Direct Supabase query for debugging
-                if (typeof supabase !== 'undefined') {
-                    debug('Querying Supabase...');
+                if (userId && typeof supabase !== 'undefined') {
+                    debug('Checking database...');
                     supabase
                         .from('premium_users')
                         .select('*')
-                        .eq('user_id', user.id)
+                        .eq('user_id', userId)
                         .single()
-                        .then(({ data, error }) => {
-                            debug('Response - Data: ' + JSON.stringify(data));
-                            debug('Response - Error: ' + JSON.stringify(error));
-                            if (data && data.is_premium) {
+                        .then(function(result) {
+                            debug('Data: ' + JSON.stringify(result.data));
+                            if (result.data && result.data.is_premium) {
                                 alreadyPremium.classList.add('show');
                                 upgradeBtn.textContent = 'Go to Calculator';
                                 upgradeBtn.href = 'app.html';
-                                // Also save to localStorage
                                 localStorage.setItem('evan_calc_premium', JSON.stringify({
                                     isPremium: true,
-                                    unlockedAt: data.unlocked_at,
-                                    userId: user.id
+                                    userId: userId
                                 }));
-                                debug('Premium unlocked!');
+                                debug('Premium activated!');
                             }
                         })
-                        .catch(err => {
-                            debug('Error: ' + err.message);
+                        .catch(function(err) {
+                            debug('Error: ' + err);
                         });
                 }
-            } else {
-                debug('No user found');
-            }
-
-            // Set Stripe Payment Link
-            const paymentLink = premiumManager.getStripePaymentLink();
-            if (paymentLink && paymentLink !== 'YOUR_STRIPE_PAYMENT_LINK_HERE') {
-                upgradeBtn.href = paymentLink;
-            } else {
-                upgradeBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Payment link not configured. Please contact the developer.');
-                });
+            } catch(e) {
+                debug('JS Error: ' + e.message);
             }
         });
     </script>
