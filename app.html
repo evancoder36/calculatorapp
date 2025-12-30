@@ -11,6 +11,7 @@
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <!-- Auth check -->
     <script src="auth.js"></script>
+    <script src="premium.js"></script>
     <script>
         // Redirect to login if not authenticated
         if (!authManager.isAuthenticated()) {
@@ -243,10 +244,10 @@
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="basic">Basic</button>
             <button class="tab-btn" data-tab="scientific">Sci</button>
-            <button class="tab-btn" data-tab="graph">Graph</button>
-            <button class="tab-btn" data-tab="converter">Units</button>
-            <button class="tab-btn" data-tab="currency">Cash</button>
-            <button class="tab-btn" data-tab="ai">AI</button>
+            <button class="tab-btn premium-tab" data-tab="graph">Graph <span class="premium-lock">&#128274;</span></button>
+            <button class="tab-btn premium-tab" data-tab="converter">Units <span class="premium-lock">&#128274;</span></button>
+            <button class="tab-btn premium-tab" data-tab="currency">Cash <span class="premium-lock">&#128274;</span></button>
+            <button class="tab-btn premium-tab" data-tab="ai">AI <span class="premium-lock">&#128274;</span></button>
             <button class="tab-btn" data-tab="history">History</button>
         </nav>
 
@@ -619,6 +620,16 @@
             if (user) {
                 document.getElementById('userAvatar').src = user.picture;
                 document.getElementById('userName').textContent = user.name;
+            }
+
+            // Hide premium locks if user has premium
+            if (premiumManager.isPremium()) {
+                document.querySelectorAll('.premium-lock').forEach(lock => {
+                    lock.style.display = 'none';
+                });
+                document.querySelectorAll('.premium-tab').forEach(tab => {
+                    tab.classList.add('unlocked');
+                });
             }
 
             // Sign out handler

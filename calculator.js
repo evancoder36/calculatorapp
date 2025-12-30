@@ -229,6 +229,12 @@ class Calculator {
             btn.addEventListener('click', () => {
                 const tab = btn.dataset.tab;
 
+                // Check if premium tab and user doesn't have premium
+                if (typeof premiumManager !== 'undefined' && premiumManager.isPremiumTab(tab) && !premiumManager.isPremium()) {
+                    window.location.href = 'upgrade.html';
+                    return;
+                }
+
                 // Update active tab
                 tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');

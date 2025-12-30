@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - Evan Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="auth.js"></script>
+    <script src="premium.js"></script>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .upgrade-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .upgrade-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .upgrade-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+        }
+
+        .upgrade-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .upgrade-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+        }
+
+        .features-list {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .price-section {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .price-currency {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .price-note {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 4px;
+        }
+
+        .upgrade-btn {
+            display: block;
+            width: 100%;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .back-link {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        /* Success State */
+        .success-card {
+            display: none;
+        }
+
+        .success-card.show {
+            display: block;
+        }
+
+        .upgrade-card.hide {
+            display: none;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .success-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .app-btn {
+            display: inline-block;
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .app-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Already Premium */
+        .already-premium {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .already-premium.show {
+            display: block;
+        }
+
+        .already-premium p {
+            color: #10b981;
+            margin: 0;
+        }
+
+        /* Light mode */
+        [data-theme="light"] .upgrade-card,
+        [data-theme="light"] .success-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .upgrade-title,
+        [data-theme="light"] .feature-name,
+        [data-theme="light"] .price-amount {
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .upgrade-subtitle,
+        [data-theme="light"] .feature-desc,
+        [data-theme="light"] .price-label,
+        [data-theme="light"] .price-note,
+        [data-theme="light"] .price-currency {
+            color: rgba(30, 41, 59, 0.6);
+        }
+
+        [data-theme="light"] .feature-item {
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .success-message {
+            color: rgba(30, 41, 59, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="upgrade-container">
+        <!-- Upgrade Card -->
+        <div class="upgrade-card" id="upgradeCard">
+            <div class="upgrade-icon">&#9733;</div>
+            <h1 class="upgrade-title">Unlock Premium Features</h1>
+            <p class="upgrade-subtitle">Get access to all advanced calculator features</p>
+
+            <!-- Already Premium Notice -->
+            <div class="already-premium" id="alreadyPremium">
+                <p>You already have premium access!</p>
+            </div>
+
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">&#128200;</div>
+                    <div class="feature-text">
+                        <div class="feature-name">Graph Calculator</div>
+                        <div class="feature-desc">Plot and visualize any mathematical function</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">&#128207;</div>
+                    <div class="feature-text">
+                        <div class="feature-name">Unit Converter</div>
+                        <div class="feature-desc">Convert between 100+ units across 8 categories</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">&#128176;</div>
+                    <div class="feature-text">
+                        <div class="feature-name">Currency Converter</div>
+                        <div class="feature-desc">Real-time exchange rates for 30+ currencies</div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">&#129302;</div>
+                    <div class="feature-text">
+                        <div class="feature-name">AI Math Assistant</div>
+                        <div class="feature-desc">Get help solving equations and math problems</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="price-section">
+                <div class="price-label">One-time payment</div>
+                <div class="price-amount">$1 <span class="price-currency">SGD</span></div>
+                <div class="price-note">Lifetime access, no subscription</div>
+            </div>
+
+            <a href="#" class="upgrade-btn" id="upgradeBtn">Upgrade Now</a>
+            <a href="app.html" class="back-link">Back to Calculator</a>
+        </div>
+
+        <!-- Success Card -->
+        <div class="success-card" id="successCard">
+            <div class="success-icon">&#10003;</div>
+            <h1 class="success-title">Payment Successful!</h1>
+            <p class="success-message">
+                Thank you for upgrading to Premium!<br>
+                You now have full access to all features including Graph, Unit Converter, Currency Converter, and AI Assistant.
+            </p>
+            <a href="app.html" class="app-btn">Open Calculator</a>
+        </div>
+    </div>
+
+    <script>
+        // Theme handling
+        const savedTheme = localStorage.getItem('evan_calc_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const upgradeCard = document.getElementById('upgradeCard');
+            const successCard = document.getElementById('successCard');
+            const alreadyPremium = document.getElementById('alreadyPremium');
+            const upgradeBtn = document.getElementById('upgradeBtn');
+
+            // Check for success parameter (returning from Stripe)
+            if (urlParams.get('success') === 'true') {
+                // Get user ID if available
+                const user = authManager.getUser();
+                const userId = user ? user.id : 'anonymous';
+
+                // Set premium status
+                premiumManager.setPremium(userId);
+
+                // Show success card
+                upgradeCard.classList.add('hide');
+                successCard.classList.add('show');
+
+                // Clean up URL
+                window.history.replaceState({}, document.title, 'upgrade.html');
+                return;
+            }
+
+            // Check if already premium
+            if (premiumManager.isPremium()) {
+                alreadyPremium.classList.add('show');
+                upgradeBtn.textContent = 'Go to Calculator';
+                upgradeBtn.href = 'app.html';
+                return;
+            }
+
+            // Set Stripe Payment Link
+            const paymentLink = premiumManager.getStripePaymentLink();
+            if (paymentLink && paymentLink !== 'YOUR_STRIPE_PAYMENT_LINK_HERE') {
+                upgradeBtn.href = paymentLink;
+            } else {
+                upgradeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Payment link not configured. Please contact the developer.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

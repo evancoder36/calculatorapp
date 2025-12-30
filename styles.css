@@ -1892,3 +1892,53 @@ body {
         font-size: 14px;
     }
 }
+
+/* ==================== Premium Tab Styles ==================== */
+
+.premium-tab {
+    position: relative;
+}
+
+.premium-lock {
+    font-size: 10px;
+    margin-left: 2px;
+    opacity: 0.8;
+    vertical-align: middle;
+}
+
+.premium-tab:not(.unlocked) {
+    opacity: 0.85;
+}
+
+.premium-tab:not(.unlocked):hover {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.premium-tab.unlocked .premium-lock {
+    display: none;
+}
+
+/* Premium badge glow effect */
+.premium-tab:not(.unlocked)::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+@media (max-width: 480px) {
+    .premium-lock {
+        font-size: 8px;
+    }
+
+    .premium-tab:not(.unlocked)::after {
+        width: 6px;
+        height: 6px;
+    }
+}
