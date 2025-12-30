@@ -72,13 +72,23 @@
     background: rgba(255, 255, 255, 0.6);
 }
 
+[data-theme="light"] .tab-nav {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
 [data-theme="light"] .tab-btn {
     color: var(--text-secondary);
 }
 
+[data-theme="light"] .tab-btn::before {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+}
+
 [data-theme="light"] .tab-btn.active {
-    color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.2);
+    color: white;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 [data-theme="light"] .calculator-container {
@@ -305,37 +315,87 @@ body {
 /* Tab Navigation */
 .tab-nav {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 20px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    padding: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .tab-btn {
     flex: 1;
-    padding: 10px 8px;
+    padding: 12px 10px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     min-width: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 10px;
 }
 
 .tab-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.tab-btn:hover::before {
+    opacity: 1;
+}
+
+.tab-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .tab-btn.active {
     background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
     color: var(--text-primary);
-    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    transform: translateY(-1px);
+}
+
+.tab-btn.active::before {
+    opacity: 0;
+}
+
+.tab-btn.premium-tab {
+    position: relative;
+}
+
+.tab-btn.premium-tab .premium-lock {
+    font-size: 10px;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
+.tab-btn.premium-tab.unlocked .premium-lock {
+    display: none;
 }
 
 /* Display Area */
