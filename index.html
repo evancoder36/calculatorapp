@@ -894,7 +894,9 @@
                 <a href="#ai">AI Assistant</a>
                 <a href="https://github.com/evancoder36/calculatorapp" target="_blank">GitHub</a>
                 <!-- Show when NOT signed in -->
-                <div id="nav-signin" class="nav-cta" style="cursor: pointer;">Sign In</div>
+                <div id="nav-signin-container">
+                    <div id="google-signin-button-nav"></div>
+                </div>
                 <!-- Show when signed in -->
                 <div id="nav-user" class="user-profile hidden">
                     <img id="nav-user-avatar" class="user-avatar" src="" alt="User">
@@ -1161,7 +1163,7 @@
     <script>
         // UI Elements
         const elements = {
-            navSignin: document.getElementById('nav-signin'),
+            navSigninContainer: document.getElementById('nav-signin-container'),
             navUser: document.getElementById('nav-user'),
             navUserAvatar: document.getElementById('nav-user-avatar'),
             heroSignin: document.getElementById('hero-signin'),
@@ -1176,7 +1178,7 @@
         function updateUI(user) {
             if (user) {
                 // User is signed in
-                elements.navSignin.classList.add('hidden');
+                elements.navSigninContainer.classList.add('hidden');
                 elements.navUser.classList.remove('hidden');
                 elements.navUserAvatar.src = user.picture;
 
@@ -1188,7 +1190,7 @@
                 elements.ctaLaunch.classList.remove('hidden');
             } else {
                 // User is signed out
-                elements.navSignin.classList.remove('hidden');
+                elements.navSigninContainer.classList.remove('hidden');
                 elements.navUser.classList.add('hidden');
 
                 elements.heroSignin.classList.remove('hidden');
@@ -1231,12 +1233,19 @@
                         width: 280
                     }
                 );
-            }
 
-            // Nav sign in click - scroll to hero
-            elements.navSignin.addEventListener('click', function() {
-                document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
-            });
+                // Third button for Nav
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button-nav'),
+                    {
+                        theme: 'outline',
+                        size: 'medium',
+                        type: 'standard',
+                        shape: 'pill',
+                        text: 'signin'
+                    }
+                );
+            }
 
             // Sign out handler
             elements.heroSignout.addEventListener('click', function() {
