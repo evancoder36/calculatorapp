@@ -3,26 +3,12 @@
 
 class AIAssistant {
     constructor() {
-        this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
+        // Using Hugging Face's free inference API - no API key needed
+        this.apiUrl = 'https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct';
 
-        this.systemPrompt = `You are a friendly and helpful math and science tutor named "Evan AI" integrated into a calculator app called "The Evan Multiuse Calculator".
-
-Your expertise includes:
-- Mathematics: algebra, calculus, geometry, trigonometry, statistics
-- Physics: mechanics, thermodynamics, electromagnetism, quantum physics
-- Chemistry: reactions, equations, periodic table, organic chemistry
-- General science questions
-
-Guidelines:
-- Solve problems step by step, showing your work clearly
-- Use simple notation: x^2 for squared, sqrt() for square root, pi for π
-- Keep explanations concise but thorough
-- Be encouraging and educational
-- If a question is unclear, ask for clarification
-- For complex equations, break them down into smaller steps`;
+        this.systemPrompt = `You are Evan AI, a helpful math and science tutor. You help with algebra, calculus, geometry, physics, chemistry, and science questions. Always show your work step by step. Be concise and educational.`;
 
         this.init();
     }
@@ -93,19 +79,14 @@ Guidelines:
     }
 
     checkApiKey() {
+        // No API key needed - hide the setup panel
         const setup = document.getElementById('aiSetup');
         const settingsBtn = document.getElementById('aiSettingsBtn');
         const keyStatus = document.getElementById('apiKeyStatus');
 
-        if (!this.apiKey) {
-            if (setup) setup.classList.add('show');
-            if (settingsBtn) settingsBtn.innerHTML = '<span class="key-icon">🔑</span> Add Key';
-            if (keyStatus) keyStatus.textContent = 'Not configured';
-        } else {
-            if (setup) setup.classList.remove('show');
-            if (settingsBtn) settingsBtn.innerHTML = '<span class="key-icon">✓</span> Key Set';
-            if (keyStatus) keyStatus.textContent = 'Ready';
-        }
+        if (setup) setup.style.display = 'none';
+        if (settingsBtn) settingsBtn.style.display = 'none';
+        if (keyStatus) keyStatus.textContent = 'Ready (Free AI)';
     }
 
     toggleSettings() {
@@ -183,12 +164,6 @@ Guidelines:
 
         if (!message || this.isProcessing) return;
 
-        if (!this.apiKey) {
-            this.addSystemMessage('Please set up your API key first', 'error');
-            this.toggleSettings();
-            return;
-        }
-
         // Clear welcome message on first use
         const welcome = document.querySelector('.ai-welcome');
         if (welcome) {
@@ -205,7 +180,7 @@ Guidelines:
         this.isProcessing = true;
 
         try {
-            const response = await this.callGeminiAPI(message);
+            const response = await this.callAI(message);
             this.removeTyping();
             this.addMessage(response, 'assistant');
         } catch (error) {
@@ -221,58 +196,58 @@ Guidelines:
         this.isProcessing = false;
     }
 
-    async callGeminiAPI(message) {
-        // Build the full prompt including system context and history
-        let fullPrompt = this.systemPrompt + "\n\n";
+    async callAI(message) {
+        // Build the prompt
+        let prompt = `<|system|>\n${this.systemPrompt}<|end|>\n`;
 
         // Add recent chat history
-        const recentHistory = this.chatHistory.slice(-6);
-        if (recentHistory.length > 0) {
-            fullPrompt += "Previous conversation:\n";
-            for (const msg of recentHistory) {
-                const role = msg.role === 'user' ? 'User' : 'Assistant';
-                fullPrompt += `${role}: ${msg.content}\n`;
+        const recentHistory = this.chatHistory.slice(-4);
+        for (const msg of recentHistory) {
+            if (msg.role === 'user') {
+                prompt += `<|user|>\n${msg.content}<|end|>\n`;
+            } else {
+                prompt += `<|assistant|>\n${msg.content}<|end|>\n`;
             }
-            fullPrompt += "\n";
         }
 
-        fullPrompt += `User: ${message}\n\nAssistant:`;
+        prompt += `<|user|>\n${message}<|end|>\n<|assistant|>\n`;
 
-        const requestBody = {
-            contents: [{
-                parts: [{ text: fullPrompt }]
-            }]
-        };
+        console.log('Sending to AI...');
 
-        console.log('Sending to Gemini...');
-
-        const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+        const response = await fetch(this.apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                inputs: prompt,
+                parameters: {
+                    max_new_tokens: 500,
+                    temperature: 0.7,
+                    return_full_text: false
+                }
+            })
         });
 
-        let data;
-        try {
-            data = await response.json();
-        } catch (e) {
-            throw new Error('Failed to parse response: ' + response.status);
+        const data = await response.json();
+        console.log('API Response:', data);
+
+        if (data.error) {
+            throw new Error(data.error);
         }
 
-        console.log('API Response:', JSON.stringify(data, null, 2));
-
-        if (!response.ok) {
-            const errorDetail = data.error?.message || data.error?.status || JSON.stringify(data);
-            throw new Error('API Error: ' + errorDetail);
+        let assistantMessage = '';
+        if (Array.isArray(data) && data[0]?.generated_text) {
+            assistantMessage = data[0].generated_text;
+        } else if (typeof data === 'string') {
+            assistantMessage = data;
+        } else {
+            throw new Error('Unexpected response format');
         }
 
-        if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            throw new Error('Empty response: ' + JSON.stringify(data));
-        }
-
-        const assistantMessage = data.candidates[0].content.parts[0].text;
+        // Clean up the response
+        assistantMessage = assistantMessage.split('<|end|>')[0].trim();
+        assistantMessage = assistantMessage.split('<|user|>')[0].trim();
 
         // Save to chat history
         this.chatHistory.push({ role: 'user', content: message });
