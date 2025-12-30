@@ -4,8 +4,8 @@
 const PREMIUM_CONFIG = {
     storageKey: 'evan_calc_premium',
     premiumTabs: ['graph', 'converter', 'currency', 'ai'],
-    // Replace with your Stripe Payment Link URL
-    stripePaymentLink: 'YOUR_STRIPE_PAYMENT_LINK_HERE'
+    // Stripe Payment Link URL
+    stripePaymentLink: 'https://buy.stripe.com/test_5kQbJ0dMid9T5eb1N64Ni00'
 };
 
 class PremiumManager {
