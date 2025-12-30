@@ -335,6 +335,7 @@
 
             <a href="#" class="upgrade-btn" id="upgradeBtn">Upgrade Now</a>
             <a href="app.html" class="back-link">Back to Calculator</a>
+            <div id="debugInfo" style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12px; color: #888; text-align: left;"></div>
         </div>
 
         <!-- Success Card -->
@@ -387,21 +388,29 @@
                 return;
             }
 
+            // Debug info element
+            const debugInfo = document.getElementById('debugInfo');
+            function debug(msg) {
+                debugInfo.innerHTML += msg + '<br>';
+            }
+
             // Then check Supabase for premium status (in case user paid on another device)
             const user = authManager.getUser();
-            console.log('User ID:', user?.id);
-            console.log('Supabase loaded:', typeof supabase !== 'undefined');
+            debug('User ID: ' + (user?.id || 'not found'));
+            debug('Supabase loaded: ' + (typeof supabase !== 'undefined'));
 
             if (user && user.id) {
                 // Direct Supabase query for debugging
                 if (typeof supabase !== 'undefined') {
+                    debug('Querying Supabase...');
                     supabase
                         .from('premium_users')
                         .select('*')
                         .eq('user_id', user.id)
                         .single()
                         .then(({ data, error }) => {
-                            console.log('Supabase response:', data, error);
+                            debug('Response - Data: ' + JSON.stringify(data));
+                            debug('Response - Error: ' + JSON.stringify(error));
                             if (data && data.is_premium) {
                                 alreadyPremium.classList.add('show');
                                 upgradeBtn.textContent = 'Go to Calculator';
@@ -412,9 +421,15 @@
                                     unlockedAt: data.unlocked_at,
                                     userId: user.id
                                 }));
+                                debug('Premium unlocked!');
                             }
+                        })
+                        .catch(err => {
+                            debug('Error: ' + err.message);
                         });
                 }
+            } else {
+                debug('No user found');
             }
 
             // Set Stripe Payment Link
