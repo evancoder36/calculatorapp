@@ -9,8 +9,64 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
     <!-- Plotly.js for graphing -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Auth check -->
+    <script src="auth.js"></script>
+    <script>
+        // Redirect to login if not authenticated
+        if (!authManager.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+    </script>
+    <style>
+        .user-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 100px;
+            z-index: 1000;
+        }
+        .user-badge img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #6366f1;
+        }
+        .user-badge .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+        }
+        .user-badge .sign-out {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .user-badge .sign-out:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+    </style>
 </head>
 <body>
+    <!-- User Badge -->
+    <div class="user-badge" id="userBadge">
+        <img id="userAvatar" src="" alt="User">
+        <span class="user-name" id="userName"></span>
+        <button class="sign-out" id="signOutBtn">Sign Out</button>
+    </div>
+
     <div class="background-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
@@ -374,5 +430,22 @@
     <script src="converter.js"></script>
     <script src="currency.js"></script>
     <script src="ai-assistant.js?v=3"></script>
+    <script>
+        // Display user info
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = authManager.getUser();
+            if (user) {
+                document.getElementById('userAvatar').src = user.picture;
+                document.getElementById('userName').textContent = user.name;
+            }
+
+            // Sign out handler
+            document.getElementById('signOutBtn').addEventListener('click', function() {
+                authManager.signOut(() => {
+                    window.location.href = 'index.html';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
