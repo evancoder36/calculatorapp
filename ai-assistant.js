@@ -4,7 +4,7 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('geminiApiKey') || '';
-        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
         this.chatHistory = [];
         this.isProcessing = false;
 
@@ -228,36 +228,29 @@ Guidelines:
     }
 
     async callGeminiAPI(message) {
-        // Build contents array with chat history
-        const contents = [];
+        // Build the full prompt including system context and history
+        let fullPrompt = this.systemPrompt + "\n\n";
 
-        // Add chat history for context
-        const recentHistory = this.chatHistory.slice(-10);
-        for (const msg of recentHistory) {
-            contents.push({
-                role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }]
-            });
+        // Add recent chat history
+        const recentHistory = this.chatHistory.slice(-6);
+        if (recentHistory.length > 0) {
+            fullPrompt += "Previous conversation:\n";
+            for (const msg of recentHistory) {
+                const role = msg.role === 'user' ? 'User' : 'Assistant';
+                fullPrompt += `${role}: ${msg.content}\n`;
+            }
+            fullPrompt += "\n";
         }
 
-        // Add current message
-        contents.push({
-            role: 'user',
-            parts: [{ text: message }]
-        });
+        fullPrompt += `User: ${message}\n\nAssistant:`;
 
         const requestBody = {
-            system_instruction: {
-                parts: [{ text: this.systemPrompt }]
-            },
-            contents: contents,
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 2048,
-            }
+            contents: [{
+                parts: [{ text: fullPrompt }]
+            }]
         };
 
-        console.log('Sending request to Gemini API...');
+        console.log('Sending to Gemini...');
 
         const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
             method: 'POST',
@@ -268,18 +261,14 @@ Guidelines:
         });
 
         const data = await response.json();
+        console.log('Response:', data);
 
         if (!response.ok) {
-            console.error('API Error Response:', data);
-            const errorMessage = data.error?.message || `HTTP ${response.status}`;
-            throw new Error(errorMessage);
+            throw new Error(data.error?.message || `Error ${response.status}`);
         }
 
-        console.log('API Response:', data);
-
-        if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            console.error('Invalid response structure:', data);
-            throw new Error('No response generated');
+        if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            throw new Error('No response received');
         }
 
         const assistantMessage = data.candidates[0].content.parts[0].text;
