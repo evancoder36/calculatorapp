@@ -14,7 +14,7 @@
     <script>
         // Redirect to login if not authenticated
         if (!authManager.isAuthenticated()) {
-            window.location.href = 'index.html';
+            window.location.href = './';
         }
     </script>
     <style>
@@ -126,7 +126,7 @@
 <body>
     <!-- Top Bar with Logo and User -->
     <div class="top-bar">
-        <a href="index.html" class="top-bar-logo">
+        <a href="./" class="top-bar-logo">
             <div class="logo-icon">E</div>
             <span class="logo-text">Evan Calculator</span>
         </a>
@@ -516,7 +516,7 @@
             // Sign out handler
             document.getElementById('signOutBtn').addEventListener('click', function() {
                 authManager.signOut(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = './';
                 });
             });
         });

@@ -116,7 +116,7 @@ class AuthManager {
     }
 
     // Check if user is authenticated, redirect to login if not
-    requireAuth(redirectUrl = 'index.html') {
+    requireAuth(redirectUrl = './') {
         if (!this.isAuthenticated()) {
             window.location.href = redirectUrl;
             return false;
