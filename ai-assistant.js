@@ -213,7 +213,9 @@ Guidelines:
             console.error('AI Error:', error);
 
             // Show the actual error message for debugging
-            this.addSystemMessage('Error: ' + error.message, 'error');
+            const errMsg = error.message || error.toString() || 'Unknown error';
+            this.addSystemMessage('Error: ' + errMsg, 'error');
+            console.log('Full error:', error);
         }
 
         this.isProcessing = false;
@@ -252,15 +254,22 @@ Guidelines:
             body: JSON.stringify(requestBody)
         });
 
-        const data = await response.json();
-        console.log('Response:', data);
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Failed to parse response: ' + response.status);
+        }
+
+        console.log('API Response:', JSON.stringify(data, null, 2));
 
         if (!response.ok) {
-            throw new Error(data.error?.message || `Error ${response.status}`);
+            const errorDetail = data.error?.message || data.error?.status || JSON.stringify(data);
+            throw new Error('API Error: ' + errorDetail);
         }
 
         if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            throw new Error('No response received');
+            throw new Error('Empty response: ' + JSON.stringify(data));
         }
 
         const assistantMessage = data.candidates[0].content.parts[0].text;
