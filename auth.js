@@ -3,7 +3,7 @@
 
 const AUTH_CONFIG = {
     // Get your Client ID from: https://console.cloud.google.com/apis/credentials
-    clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+    clientId: '216186738747-6qkh465nhvbdnbovunt9d8601qdeqjgq.apps.googleusercontent.com',
     cookieName: 'evan_calc_user'
 };
 
