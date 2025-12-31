@@ -1080,3 +1080,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Debug function - run in console: testScoreSync()
+window.testScoreSync = async function() {
+    console.log('=== Testing Score Sync ===');
+
+    // Check supabaseClient
+    console.log('1. supabaseClient exists:', !!window.supabaseClient);
+
+    // Check authManager
+    console.log('2. authManager exists:', !!window.authManager);
+
+    // Check user
+    const user = window.authManager?.getUser();
+    console.log('3. User:', user);
+    console.log('   User ID:', user?.id);
+
+    if (!window.supabaseClient) {
+        console.error('No supabaseClient!');
+        return;
+    }
+
+    if (!user?.id) {
+        console.error('No user ID!');
+        return;
+    }
+
+    // Try to insert a test score
+    console.log('4. Attempting to save test score...');
+    const { data, error } = await window.supabaseClient
+        .from('game_scores')
+        .upsert({
+            user_id: user.id,
+            game_name: 'blockblast',
+            high_score: 999,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'user_id,game_name'
+        })
+        .select();
+
+    if (error) {
+        console.error('5. Error:', error);
+    } else {
+        console.log('5. Success! Data:', data);
+    }
+
+    // Try to read it back
+    console.log('6. Reading score back...');
+    const { data: readData, error: readError } = await window.supabaseClient
+        .from('game_scores')
+        .select('*')
+        .eq('user_id', user.id);
+
+    if (readError) {
+        console.error('7. Read Error:', readError);
+    } else {
+        console.log('7. Read Success! Data:', readData);
+    }
+
+    console.log('=== Test Complete ===');
+};
