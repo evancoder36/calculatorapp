@@ -142,8 +142,6 @@ class BlockBlastGame {
         try {
             // Get user from multiple sources (authManager or localStorage)
             const user = this.getUserData();
-            console.log('Block Blast: User loaded:', user?.id);
-
             if (user && user.id) {
                 this.userId = user.id;
                 await this.loadScoreFromCloud();
@@ -177,14 +175,9 @@ class BlockBlastGame {
 
     // Load high score from Supabase
     async loadScoreFromCloud() {
-        if (!this.userId || !window.supabaseClient) {
-            console.log('Block Blast: Cannot load score - no userId or supabaseClient');
-            return;
-        }
+        if (!this.userId || !window.supabaseClient) return;
 
         try {
-            console.log('Block Blast: Loading score for user:', this.userId);
-
             const { data, error } = await window.supabaseClient
                 .from('game_scores')
                 .select('high_score')
@@ -192,50 +185,36 @@ class BlockBlastGame {
                 .eq('game_name', 'blockblast')
                 .maybeSingle();
 
-            if (error) {
-                console.error('Error loading score:', error);
-                return;
-            }
-
-            console.log('Block Blast: Cloud data received:', data);
+            if (error) return;
 
             if (data && data.high_score !== null) {
                 const cloudScore = parseInt(data.high_score);
-                console.log('Block Blast: Cloud score:', cloudScore, 'Local score:', this.highScore);
-
                 // Use the higher score between local and cloud
                 if (cloudScore > this.highScore) {
                     this.highScore = cloudScore;
                     localStorage.setItem('evan_bb_highscore', this.highScore);
                     this.updateScoreDisplay();
-                    console.log('Block Blast: Updated to cloud score:', this.highScore);
                 } else if (this.highScore > cloudScore) {
                     // Local score is higher, sync it to cloud
                     await this.saveScoreToCloud();
-                    console.log('Block Blast: Synced local score to cloud');
                 }
             } else if (this.highScore > 0) {
                 // No cloud score but we have local score, save it
-                console.log('Block Blast: No cloud score, saving local score');
                 await this.saveScoreToCloud();
             }
         } catch (error) {
-            console.error('Error loading score from cloud:', error);
+            // Silent fail for cloud sync
         }
     }
 
     // Save high score to Supabase
     async saveScoreToCloud() {
-        if (!this.userId || !window.supabaseClient || this.syncingScore) {
-            console.log('Block Blast: Cannot save - no userId, client, or already syncing');
-            return;
-        }
+        if (!this.userId || !window.supabaseClient || this.syncingScore) return;
 
         this.syncingScore = true;
-        console.log('Block Blast: Saving score to cloud:', this.highScore);
 
         try {
-            const { data, error } = await window.supabaseClient
+            await window.supabaseClient
                 .from('game_scores')
                 .upsert({
                     user_id: this.userId,
@@ -244,16 +223,9 @@ class BlockBlastGame {
                     updated_at: new Date().toISOString()
                 }, {
                     onConflict: 'user_id,game_name'
-                })
-                .select();
-
-            if (error) {
-                console.error('Error saving score:', error);
-            } else {
-                console.log('Block Blast: Score saved successfully:', data);
-            }
+                });
         } catch (error) {
-            console.error('Error saving score to cloud:', error);
+            // Silent fail for cloud sync
         } finally {
             this.syncingScore = false;
         }
@@ -1103,89 +1075,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Helper function to get user from multiple sources
-function getUserFromAnySource() {
-    // Try window.authManager first
-    if (window.authManager?.getUser()) {
-        return window.authManager.getUser();
-    }
-    // Try global authManager
-    if (typeof authManager !== 'undefined' && authManager?.getUser()) {
-        return authManager.getUser();
-    }
-    // Fallback: read directly from localStorage
-    const stored = localStorage.getItem('evan_calc_user');
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            return null;
-        }
-    }
-    return null;
-}
-
-// Debug function - run in console: testScoreSync()
-window.testScoreSync = async function() {
-    console.log('=== Testing Score Sync ===');
-
-    // Check supabaseClient
-    console.log('1. supabaseClient exists:', !!window.supabaseClient);
-
-    // Check authManager
-    console.log('2. window.authManager exists:', !!window.authManager);
-    console.log('   global authManager exists:', typeof authManager !== 'undefined');
-
-    // Check user from multiple sources
-    const user = getUserFromAnySource();
-    console.log('3. User:', user);
-    console.log('   User ID:', user?.id);
-
-    // Also check localStorage directly
-    console.log('4. localStorage evan_calc_user:', localStorage.getItem('evan_calc_user'));
-
-    if (!window.supabaseClient) {
-        console.error('No supabaseClient!');
-        return;
-    }
-
-    if (!user?.id) {
-        console.error('No user ID!');
-        return;
-    }
-
-    // Try to insert a test score
-    console.log('4. Attempting to save test score...');
-    const { data, error } = await window.supabaseClient
-        .from('game_scores')
-        .upsert({
-            user_id: user.id,
-            game_name: 'blockblast',
-            high_score: 999,
-            updated_at: new Date().toISOString()
-        }, {
-            onConflict: 'user_id,game_name'
-        })
-        .select();
-
-    if (error) {
-        console.error('5. Error:', error);
-    } else {
-        console.log('5. Success! Data:', data);
-    }
-
-    // Try to read it back
-    console.log('6. Reading score back...');
-    const { data: readData, error: readError } = await window.supabaseClient
-        .from('game_scores')
-        .select('*')
-        .eq('user_id', user.id);
-
-    if (readError) {
-        console.error('7. Read Error:', readError);
-    } else {
-        console.log('7. Read Success! Data:', readData);
-    }
-
-    console.log('=== Test Complete ===');
-};
