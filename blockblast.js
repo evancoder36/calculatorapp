@@ -193,9 +193,14 @@ class BlockBlastGame {
                 this.highScore = cloudScore;
                 localStorage.setItem('evan_bb_highscore', this.highScore);
                 this.updateScoreDisplay();
+            } else {
+                // No cloud record exists - create one with score 0
+                // This ensures admin can edit all users' scores in Supabase
+                this.highScore = 0;
+                localStorage.setItem('evan_bb_highscore', 0);
+                await this.saveScoreToCloud();
+                this.updateScoreDisplay();
             }
-            // If no cloud record exists, keep local score but don't auto-upload
-            // Score will sync to cloud when user earns a new high score
         } catch (error) {
             // Silent fail for cloud sync
         }
