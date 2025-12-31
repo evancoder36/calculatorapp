@@ -188,20 +188,14 @@ class BlockBlastGame {
             if (error) return;
 
             if (data && data.high_score !== null) {
+                // Cloud is source of truth - always use cloud score
                 const cloudScore = parseInt(data.high_score);
-                // Use the higher score between local and cloud
-                if (cloudScore > this.highScore) {
-                    this.highScore = cloudScore;
-                    localStorage.setItem('evan_bb_highscore', this.highScore);
-                    this.updateScoreDisplay();
-                } else if (this.highScore > cloudScore) {
-                    // Local score is higher, sync it to cloud
-                    await this.saveScoreToCloud();
-                }
-            } else if (this.highScore > 0) {
-                // No cloud score but we have local score, save it
-                await this.saveScoreToCloud();
+                this.highScore = cloudScore;
+                localStorage.setItem('evan_bb_highscore', this.highScore);
+                this.updateScoreDisplay();
             }
+            // If no cloud record exists, keep local score but don't auto-upload
+            // Score will sync to cloud when user earns a new high score
         } catch (error) {
             // Silent fail for cloud sync
         }
