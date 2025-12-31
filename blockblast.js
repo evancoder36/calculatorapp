@@ -17,6 +17,30 @@ class BlockBlastGame {
         this.fallInterval = null;
         this.fallSpeed = 8000; // Start with 8 seconds between falls
         this.isGameOver = false;
+        this.isPaused = false;
+        this.gameMode = 'medium';
+
+        // Game mode settings
+        this.modeSettings = {
+            easy: {
+                initialBlocks: { min: 4, max: 8 },
+                fallSpeed: 12000,
+                speedDecrease: 300,
+                minSpeed: 5000
+            },
+            medium: {
+                initialBlocks: { min: 8, max: 15 },
+                fallSpeed: 8000,
+                speedDecrease: 500,
+                minSpeed: 3000
+            },
+            hard: {
+                initialBlocks: { min: 12, max: 20 },
+                fallSpeed: 5000,
+                speedDecrease: 400,
+                minSpeed: 1500
+            }
+        };
 
         // Audio context for sound effects
         this.audioContext = null;
@@ -100,12 +124,28 @@ class BlockBlastGame {
 
     init() {
         this.initAudio();
+        this.loadGameMode();
+        this.applyModeSettings();
         this.createGrid();
         this.addInitialBlocks();
         this.generateNewPieces();
         this.updateScoreDisplay();
         this.bindEvents();
         this.startFallingBlocks();
+    }
+
+    loadGameMode() {
+        const modeSelect = document.getElementById('bbModeSelect');
+        if (modeSelect) {
+            const savedMode = localStorage.getItem('evan_bb_mode') || 'medium';
+            this.gameMode = savedMode;
+            modeSelect.value = savedMode;
+        }
+    }
+
+    applyModeSettings() {
+        const settings = this.modeSettings[this.gameMode];
+        this.fallSpeed = settings.fallSpeed;
     }
 
     initAudio() {
@@ -229,11 +269,16 @@ class BlockBlastGame {
     }
 
     addInitialBlocks() {
-        // Add random blocks to the bottom 3 rows to make it challenging
-        const numInitialBlocks = 8 + Math.floor(Math.random() * 8); // 8-15 blocks
+        // Add random blocks based on game mode
+        const settings = this.modeSettings[this.gameMode];
+        const range = settings.initialBlocks.max - settings.initialBlocks.min;
+        const numInitialBlocks = settings.initialBlocks.min + Math.floor(Math.random() * range);
+
+        // More rows for harder modes
+        const rowRange = this.gameMode === 'hard' ? 4 : 3;
 
         for (let i = 0; i < numInitialBlocks; i++) {
-            const row = this.gridSize - 1 - Math.floor(Math.random() * 3); // Bottom 3 rows
+            const row = this.gridSize - 1 - Math.floor(Math.random() * rowRange);
             const col = Math.floor(Math.random() * this.gridSize);
             const color = Math.floor(Math.random() * 5) + 1;
 
@@ -253,10 +298,38 @@ class BlockBlastGame {
         }
 
         this.fallInterval = setInterval(() => {
-            if (!this.isGameOver) {
+            if (!this.isGameOver && !this.isPaused) {
                 this.addFallingBlock();
             }
         }, this.fallSpeed);
+    }
+
+    togglePause() {
+        if (this.isGameOver) return;
+
+        this.isPaused = !this.isPaused;
+        const pauseBtn = document.getElementById('bbPauseBtn');
+        const pausedOverlay = document.getElementById('bbPaused');
+
+        if (this.isPaused) {
+            if (pauseBtn) {
+                pauseBtn.textContent = '▶';
+                pauseBtn.classList.add('playing');
+            }
+            if (pausedOverlay) pausedOverlay.style.display = 'flex';
+        } else {
+            if (pauseBtn) {
+                pauseBtn.textContent = '⏸';
+                pauseBtn.classList.remove('playing');
+            }
+            if (pausedOverlay) pausedOverlay.style.display = 'none';
+        }
+    }
+
+    changeGameMode(mode) {
+        this.gameMode = mode;
+        localStorage.setItem('evan_bb_mode', mode);
+        this.restart();
     }
 
     addFallingBlock() {
@@ -374,7 +447,8 @@ class BlockBlastGame {
         const newLevel = Math.floor(this.score / 100) + 1;
         if (newLevel > this.level) {
             this.level = newLevel;
-            this.fallSpeed = Math.max(3000, 8000 - (this.level * 500)); // Min 3 seconds
+            const settings = this.modeSettings[this.gameMode];
+            this.fallSpeed = Math.max(settings.minSpeed, settings.fallSpeed - (this.level * settings.speedDecrease));
             this.startFallingBlocks();
             this.playLevelUpSound();
             this.showComboMessage(`Level ${this.level}!`, '#6366f1');
@@ -449,10 +523,19 @@ class BlockBlastGame {
         // Restart button
         document.getElementById('bbRestartBtn')?.addEventListener('click', () => this.restart());
         document.getElementById('bbPlayAgainBtn')?.addEventListener('click', () => this.restart());
+
+        // Pause button
+        document.getElementById('bbPauseBtn')?.addEventListener('click', () => this.togglePause());
+        document.getElementById('bbResumeBtn')?.addEventListener('click', () => this.togglePause());
+
+        // Game mode select
+        document.getElementById('bbModeSelect')?.addEventListener('change', (e) => {
+            this.changeGameMode(e.target.value);
+        });
     }
 
     handleDragStart(e) {
-        if (this.isGameOver) return;
+        if (this.isGameOver || this.isPaused) return;
 
         const target = e.target.closest('.draggable-piece');
         if (!target) return;
@@ -841,17 +924,29 @@ class BlockBlastGame {
         this.colorIndex = 0;
         this.combo = 0;
         this.level = 1;
-        this.fallSpeed = 8000;
         this.isGameOver = false;
+        this.isPaused = false;
+
+        // Apply mode settings
+        this.applyModeSettings();
 
         // Stop existing interval
         if (this.fallInterval) {
             clearInterval(this.fallInterval);
         }
 
-        // Hide game over screen
+        // Hide game over and pause screens
         const gameOverEl = document.getElementById('bbGameOver');
+        const pausedEl = document.getElementById('bbPaused');
         if (gameOverEl) gameOverEl.style.display = 'none';
+        if (pausedEl) pausedEl.style.display = 'none';
+
+        // Reset pause button
+        const pauseBtn = document.getElementById('bbPauseBtn');
+        if (pauseBtn) {
+            pauseBtn.textContent = '⏸';
+            pauseBtn.classList.remove('playing');
+        }
 
         // Reset grid
         this.createGrid();

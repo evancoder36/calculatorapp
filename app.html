@@ -775,6 +775,83 @@
             font-size: 12px !important;
         }
 
+        .bb-mode-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .bb-mode-select:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .bb-mode-select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .bb-pause-btn {
+            padding: 8px 12px !important;
+            font-size: 16px !important;
+            min-width: 40px;
+        }
+
+        .bb-pause-btn.playing {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .blockblast-paused {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 12px;
+        }
+
+        .paused-content {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .paused-content h2 {
+            font-size: 2rem;
+            color: #f59e0b;
+            margin-bottom: 10px;
+        }
+
+        .paused-content p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+
+        [data-theme="light"] .bb-mode-select {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.15);
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .bb-mode-select option {
+            background: white;
+            color: #1e293b;
+        }
+
         .blockblast-game-area {
             position: relative;
         }
@@ -1472,7 +1549,13 @@
                         <span class="score-label">Best</span>
                         <span class="score-value" id="bbHighScore">0</span>
                     </div>
-                    <button class="btn btn-secondary blockblast-restart" id="bbRestartBtn">New Game</button>
+                    <select class="bb-mode-select" id="bbModeSelect">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                    <button class="btn btn-secondary bb-pause-btn" id="bbPauseBtn">⏸</button>
+                    <button class="btn btn-secondary blockblast-restart" id="bbRestartBtn">New</button>
                 </div>
                 <div class="blockblast-game-area">
                     <div class="blockblast-grid" id="bbGrid">
@@ -1490,6 +1573,13 @@
                         <h2>Game Over!</h2>
                         <p>Your Score: <span id="bbFinalScore">0</span></p>
                         <button class="btn btn-equals" id="bbPlayAgainBtn">Play Again</button>
+                    </div>
+                </div>
+                <div class="blockblast-paused" id="bbPaused" style="display: none;">
+                    <div class="paused-content">
+                        <h2>⏸ Paused</h2>
+                        <p>Click resume to continue</p>
+                        <button class="btn btn-equals" id="bbResumeBtn">Resume</button>
                     </div>
                 </div>
             </div>
