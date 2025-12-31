@@ -723,6 +723,293 @@
                 right: -10px;
             }
         }
+
+        /* Block Blast Game Styles */
+        .blockblast-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .blockblast-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .blockblast-score,
+        .blockblast-highscore {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            min-width: 80px;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+
+        .blockblast-highscore .score-value {
+            color: #f59e0b;
+        }
+
+        .blockblast-restart {
+            padding: 10px 16px !important;
+            font-size: 12px !important;
+        }
+
+        .blockblast-game-area {
+            position: relative;
+        }
+
+        .blockblast-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bb-cell {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            transition: all 0.15s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bb-cell.filled {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        .bb-cell.filled.color-1 {
+            background: linear-gradient(135deg, #00d4ff, #00a8cc);
+        }
+
+        .bb-cell.filled.color-2 {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+
+        .bb-cell.filled.color-3 {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .bb-cell.filled.color-4 {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .bb-cell.filled.color-5 {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .bb-cell.preview {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .bb-cell.preview-invalid {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .bb-cell.clearing {
+            animation: cellClear 0.3s ease-out;
+        }
+
+        @keyframes cellClear {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        .blockblast-pieces {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            min-height: 100px;
+        }
+
+        .piece-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            min-height: 80px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            padding: 8px;
+        }
+
+        .piece-slot.empty {
+            opacity: 0.3;
+        }
+
+        .draggable-piece {
+            display: grid;
+            gap: 2px;
+            cursor: grab;
+            transition: transform 0.2s, opacity 0.2s;
+            padding: 4px;
+        }
+
+        .draggable-piece:hover {
+            transform: scale(1.05);
+        }
+
+        .draggable-piece.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            position: fixed;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .draggable-piece.used {
+            display: none;
+        }
+
+        .piece-cell {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .piece-cell.filled {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+
+        .piece-cell.empty {
+            background: transparent;
+        }
+
+        .blockblast-gameover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 12px;
+        }
+
+        .gameover-content {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .gameover-content h2 {
+            font-size: 2rem;
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+
+        .gameover-content p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .gameover-content #bbFinalScore {
+            color: #00d4ff;
+            font-weight: 700;
+        }
+
+        /* Light mode styles for Block Blast */
+        [data-theme="light"] .blockblast-score,
+        [data-theme="light"] .blockblast-highscore {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="light"] .score-label {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] .blockblast-grid {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .bb-cell {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .blockblast-pieces {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="light"] .piece-slot {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 400px) {
+            .bb-cell {
+                width: 28px;
+                height: 28px;
+            }
+
+            .piece-cell {
+                width: 16px;
+                height: 16px;
+            }
+
+            .blockblast-header {
+                gap: 15px;
+            }
+
+            .blockblast-score,
+            .blockblast-highscore {
+                padding: 8px 12px;
+                min-width: 60px;
+            }
+
+            .score-value {
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -807,6 +1094,7 @@
             <button class="tab-btn premium-tab" data-tab="currency">Cash <span class="premium-lock">&#128274;</span></button>
             <button class="tab-btn premium-tab" data-tab="ai">AI <span class="premium-lock">&#128274;</span></button>
             <button class="tab-btn" data-tab="history">History</button>
+            <button class="tab-btn" data-tab="blockblast">Block Blast</button>
         </nav>
 
         <!-- Display Area -->
@@ -1138,6 +1426,41 @@
                 <div class="history-empty">No calculations yet</div>
             </div>
         </div>
+
+        <!-- Block Blast Panel -->
+        <div class="calculator-panel" id="blockblast-panel">
+            <div class="blockblast-container">
+                <div class="blockblast-header">
+                    <div class="blockblast-score">
+                        <span class="score-label">Score</span>
+                        <span class="score-value" id="bbScore">0</span>
+                    </div>
+                    <div class="blockblast-highscore">
+                        <span class="score-label">Best</span>
+                        <span class="score-value" id="bbHighScore">0</span>
+                    </div>
+                    <button class="btn btn-secondary blockblast-restart" id="bbRestartBtn">New Game</button>
+                </div>
+                <div class="blockblast-game-area">
+                    <div class="blockblast-grid" id="bbGrid">
+                        <!-- 8x8 grid cells generated by JS -->
+                    </div>
+                </div>
+                <div class="blockblast-pieces" id="bbPieces">
+                    <!-- 3 pieces to choose from -->
+                    <div class="piece-slot" id="pieceSlot0"></div>
+                    <div class="piece-slot" id="pieceSlot1"></div>
+                    <div class="piece-slot" id="pieceSlot2"></div>
+                </div>
+                <div class="blockblast-gameover" id="bbGameOver" style="display: none;">
+                    <div class="gameover-content">
+                        <h2>Game Over!</h2>
+                        <p>Your Score: <span id="bbFinalScore">0</span></p>
+                        <button class="btn btn-equals" id="bbPlayAgainBtn">Play Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Settings Modal Overlay -->
@@ -1163,6 +1486,7 @@
     <script src="converter.js"></script>
     <script src="currency.js"></script>
     <script src="ai-assistant.js?v=3"></script>
+    <script src="blockblast.js"></script>
     <script>
         // Theme Manager
         const ThemeManager = {
