@@ -738,8 +738,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 30px;
+            gap: 12px;
             width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .bb-scores {
+            display: flex;
+            gap: 8px;
         }
 
         .blockblast-score,
@@ -747,21 +753,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 12px;
-            min-width: 80px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 14px;
+            border-radius: 10px;
+            min-width: 65px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .score-label {
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .score-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: #00d4ff;
         }
@@ -770,43 +777,132 @@
             color: #f59e0b;
         }
 
-        .blockblast-restart {
-            padding: 10px 16px !important;
-            font-size: 12px !important;
+        .bb-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .bb-mode-select {
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 10px;
             color: white;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
             outline: none;
             transition: all 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
         }
 
         .bb-mode-select:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            border-color: rgba(99, 102, 241, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .bb-mode-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
         .bb-mode-select option {
             background: #1e293b;
             color: white;
+            padding: 10px;
+        }
+
+        .bb-btn {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         .bb-pause-btn {
-            padding: 8px 12px !important;
-            font-size: 16px !important;
-            min-width: 40px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.2));
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            min-width: 44px;
+            font-size: 16px;
+        }
+
+        .bb-pause-btn:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(251, 191, 36, 0.3));
+            border-color: rgba(245, 158, 11, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
         }
 
         .bb-pause-btn.playing {
-            background: rgba(16, 185, 129, 0.2);
-            border-color: #10b981;
-            color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2));
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .bb-pause-btn.playing:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.3));
+            border-color: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .bb-new-btn {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.2));
+            border-color: rgba(236, 72, 153, 0.4);
+            color: #f472b6;
+        }
+
+        .bb-new-btn:hover {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(244, 114, 182, 0.3));
+            border-color: rgba(236, 72, 153, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+        }
+
+        /* Light mode styles */
+        [data-theme="light"] .blockblast-score,
+        [data-theme="light"] .blockblast-highscore {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .bb-mode-select {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #4f46e5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        }
+
+        [data-theme="light"] .bb-mode-select option {
+            background: white;
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .bb-pause-btn {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #d97706;
+        }
+
+        [data-theme="light"] .bb-new-btn {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
+            border-color: rgba(236, 72, 153, 0.3);
+            color: #db2777;
         }
 
         .blockblast-paused {
@@ -1107,17 +1203,45 @@
             }
 
             .blockblast-header {
-                gap: 15px;
+                gap: 8px;
+            }
+
+            .bb-scores {
+                gap: 6px;
             }
 
             .blockblast-score,
             .blockblast-highscore {
-                padding: 8px 12px;
-                min-width: 60px;
+                padding: 6px 10px;
+                min-width: 55px;
+            }
+
+            .score-label {
+                font-size: 9px;
             }
 
             .score-value {
-                font-size: 18px;
+                font-size: 16px;
+            }
+
+            .bb-controls {
+                gap: 6px;
+            }
+
+            .bb-mode-select {
+                padding: 8px 10px;
+                font-size: 11px;
+                padding-right: 24px;
+            }
+
+            .bb-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .bb-pause-btn {
+                min-width: 36px;
+                font-size: 14px;
             }
         }
     </style>
@@ -1541,21 +1665,25 @@
         <div class="calculator-panel" id="blockblast-panel">
             <div class="blockblast-container">
                 <div class="blockblast-header">
-                    <div class="blockblast-score">
-                        <span class="score-label">Score</span>
-                        <span class="score-value" id="bbScore">0</span>
+                    <div class="bb-scores">
+                        <div class="blockblast-score">
+                            <span class="score-label">Score</span>
+                            <span class="score-value" id="bbScore">0</span>
+                        </div>
+                        <div class="blockblast-highscore">
+                            <span class="score-label">Best</span>
+                            <span class="score-value" id="bbHighScore">0</span>
+                        </div>
                     </div>
-                    <div class="blockblast-highscore">
-                        <span class="score-label">Best</span>
-                        <span class="score-value" id="bbHighScore">0</span>
+                    <div class="bb-controls">
+                        <select class="bb-mode-select" id="bbModeSelect">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        <button class="bb-btn bb-pause-btn" id="bbPauseBtn">⏸</button>
+                        <button class="bb-btn bb-new-btn" id="bbRestartBtn">New</button>
                     </div>
-                    <select class="bb-mode-select" id="bbModeSelect">
-                        <option value="easy">Easy</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
-                    <button class="btn btn-secondary bb-pause-btn" id="bbPauseBtn">⏸</button>
-                    <button class="btn btn-secondary blockblast-restart" id="bbRestartBtn">New</button>
                 </div>
                 <div class="blockblast-game-area">
                     <div class="blockblast-grid" id="bbGrid">
