@@ -1,4 +1,4 @@
-// Block Blast Game - Evan Calculator
+// Block Blast Game - Evan Calculator (Enhanced Version)
 
 class BlockBlastGame {
     constructor() {
@@ -12,6 +12,21 @@ class BlockBlastGame {
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.colorIndex = 0;
+        this.combo = 0;
+        this.level = 1;
+        this.fallInterval = null;
+        this.fallSpeed = 8000; // Start with 8 seconds between falls
+        this.isGameOver = false;
+
+        // Combo messages
+        this.comboMessages = [
+            { min: 1, text: 'Good!', color: '#10b981' },
+            { min: 2, text: 'Great!', color: '#3b82f6' },
+            { min: 3, text: 'Excellent!', color: '#8b5cf6' },
+            { min: 4, text: 'Amazing!', color: '#ec4899' },
+            { min: 5, text: 'INCREDIBLE!', color: '#f59e0b' },
+            { min: 6, text: 'UNSTOPPABLE!', color: '#ef4444' }
+        ];
 
         // All possible tetromino-like shapes
         this.shapes = [
@@ -66,14 +81,26 @@ class BlockBlastGame {
             [[0, 0, 1], [0, 0, 1], [1, 1, 1]],
         ];
 
+        // Falling block shapes (simpler shapes for falling)
+        this.fallingShapes = [
+            [[1]],
+            [[1, 1]],
+            [[1], [1]],
+            [[1, 1, 1]],
+            [[1, 1], [1, 0]],
+            [[1, 1], [0, 1]],
+        ];
+
         this.init();
     }
 
     init() {
         this.createGrid();
+        this.addInitialBlocks();
         this.generateNewPieces();
         this.updateScoreDisplay();
         this.bindEvents();
+        this.startFallingBlocks();
     }
 
     createGrid() {
@@ -93,6 +120,158 @@ class BlockBlastGame {
                 gridEl.appendChild(cell);
                 this.grid[row][col] = { filled: false, color: 0 };
             }
+        }
+    }
+
+    addInitialBlocks() {
+        // Add random blocks to the bottom 3 rows to make it challenging
+        const numInitialBlocks = 8 + Math.floor(Math.random() * 8); // 8-15 blocks
+
+        for (let i = 0; i < numInitialBlocks; i++) {
+            const row = this.gridSize - 1 - Math.floor(Math.random() * 3); // Bottom 3 rows
+            const col = Math.floor(Math.random() * this.gridSize);
+            const color = Math.floor(Math.random() * 5) + 1;
+
+            if (!this.grid[row][col].filled) {
+                this.grid[row][col] = { filled: true, color };
+                const cell = document.querySelector(`.bb-cell[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.classList.add('filled', `color-${color}`);
+                }
+            }
+        }
+    }
+
+    startFallingBlocks() {
+        if (this.fallInterval) {
+            clearInterval(this.fallInterval);
+        }
+
+        this.fallInterval = setInterval(() => {
+            if (!this.isGameOver) {
+                this.addFallingBlock();
+            }
+        }, this.fallSpeed);
+    }
+
+    addFallingBlock() {
+        // Pick a random column and add a block from the top
+        const shape = this.fallingShapes[Math.floor(Math.random() * this.fallingShapes.length)];
+        const color = Math.floor(Math.random() * 5) + 1;
+        const shapeWidth = shape[0].length;
+        const startCol = Math.floor(Math.random() * (this.gridSize - shapeWidth + 1));
+
+        // Find the lowest available position for this shape
+        let targetRow = -1;
+
+        for (let row = 0; row <= this.gridSize - shape.length; row++) {
+            let canPlace = true;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        if (this.grid[row + r][startCol + c].filled) {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+                }
+                if (!canPlace) break;
+            }
+            if (canPlace) {
+                targetRow = row;
+            } else {
+                break;
+            }
+        }
+
+        if (targetRow === -1) {
+            // Can't place block at top - game over
+            this.gameOver();
+            return;
+        }
+
+        // Animate the block falling
+        this.animateFallingBlock(shape, startCol, targetRow, color);
+    }
+
+    animateFallingBlock(shape, startCol, targetRow, color) {
+        let currentRow = 0;
+
+        const fall = () => {
+            // Clear previous position
+            if (currentRow > 0) {
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[r].length; c++) {
+                        if (shape[r][c]) {
+                            const prevRow = currentRow - 1 + r;
+                            if (prevRow >= 0 && prevRow < this.gridSize) {
+                                const cell = document.querySelector(`.bb-cell[data-row="${prevRow}"][data-col="${startCol + c}"]`);
+                                if (cell && !this.grid[prevRow][startCol + c].filled) {
+                                    cell.classList.remove('falling', `color-${color}`);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (currentRow <= targetRow) {
+                // Show at current position
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[r].length; c++) {
+                        if (shape[r][c]) {
+                            const row = currentRow + r;
+                            if (row >= 0 && row < this.gridSize) {
+                                const cell = document.querySelector(`.bb-cell[data-row="${row}"][data-col="${startCol + c}"]`);
+                                if (cell) {
+                                    cell.classList.add('falling', `color-${color}`);
+                                }
+                            }
+                        }
+                    }
+                }
+                currentRow++;
+                setTimeout(fall, 80);
+            } else {
+                // Place the block permanently
+                for (let r = 0; r < shape.length; r++) {
+                    for (let c = 0; c < shape[r].length; c++) {
+                        if (shape[r][c]) {
+                            const row = targetRow + r;
+                            this.grid[row][startCol + c] = { filled: true, color };
+                            const cell = document.querySelector(`.bb-cell[data-row="${row}"][data-col="${startCol + c}"]`);
+                            if (cell) {
+                                cell.classList.remove('falling');
+                                cell.classList.add('filled', `color-${color}`);
+                            }
+                        }
+                    }
+                }
+
+                // Check for line clears
+                this.checkAndClearLines();
+
+                // Check if game over
+                if (!this.canPlaceAnyPiece()) {
+                    this.gameOver();
+                }
+
+                // Increase difficulty over time
+                this.increaseDifficulty();
+            }
+        };
+
+        fall();
+    }
+
+    increaseDifficulty() {
+        // Speed up falling blocks as score increases
+        const newLevel = Math.floor(this.score / 100) + 1;
+        if (newLevel > this.level) {
+            this.level = newLevel;
+            this.fallSpeed = Math.max(3000, 8000 - (this.level * 500)); // Min 3 seconds
+            this.startFallingBlocks();
+            this.showComboMessage(`Level ${this.level}!`, '#6366f1');
         }
     }
 
@@ -167,6 +346,8 @@ class BlockBlastGame {
     }
 
     handleDragStart(e) {
+        if (this.isGameOver) return;
+
         const target = e.target.closest('.draggable-piece');
         if (!target) return;
 
@@ -383,12 +564,23 @@ class BlockBlastGame {
             }
         }
 
-        if (rowsToClear.length === 0 && colsToClear.length === 0) return;
+        if (rowsToClear.length === 0 && colsToClear.length === 0) {
+            this.combo = 0; // Reset combo if no lines cleared
+            return;
+        }
 
-        // Calculate bonus score
+        // Increment combo
+        this.combo++;
+
+        // Calculate bonus score with combo multiplier
         const linesCleared = rowsToClear.length + colsToClear.length;
-        const bonus = linesCleared * linesCleared * 10;
-        this.score += bonus + (linesCleared * this.gridSize);
+        const baseScore = linesCleared * this.gridSize;
+        const comboMultiplier = 1 + (this.combo * 0.5);
+        const bonus = Math.floor((linesCleared * linesCleared * 10 + baseScore) * comboMultiplier);
+        this.score += bonus;
+
+        // Show combo message
+        this.showComboFeedback(linesCleared);
 
         // Animate clearing
         const cellsToClear = new Set();
@@ -430,6 +622,59 @@ class BlockBlastGame {
         this.updateScoreDisplay();
     }
 
+    showComboFeedback(linesCleared) {
+        // Find appropriate message based on combo
+        let message = this.comboMessages[0];
+        for (const msg of this.comboMessages) {
+            if (this.combo >= msg.min) {
+                message = msg;
+            }
+        }
+
+        // Add lines cleared info for multiple clears
+        let displayText = message.text;
+        if (linesCleared > 1) {
+            displayText = `${linesCleared}x ${message.text}`;
+        }
+        if (this.combo > 1) {
+            displayText += ` x${this.combo}`;
+        }
+
+        this.showComboMessage(displayText, message.color);
+    }
+
+    showComboMessage(text, color) {
+        // Remove existing message
+        const existingMsg = document.querySelector('.combo-message');
+        if (existingMsg) {
+            existingMsg.remove();
+        }
+
+        // Create combo message element
+        const msgEl = document.createElement('div');
+        msgEl.className = 'combo-message';
+        msgEl.textContent = text;
+        msgEl.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            font-weight: 800;
+            color: ${color};
+            text-shadow: 0 0 20px ${color}, 0 4px 8px rgba(0,0,0,0.5);
+            z-index: 50;
+            pointer-events: none;
+            animation: comboPopup 0.8s ease-out forwards;
+        `;
+
+        const gameArea = document.querySelector('.blockblast-game-area');
+        if (gameArea) {
+            gameArea.appendChild(msgEl);
+            setTimeout(() => msgEl.remove(), 800);
+        }
+    }
+
     canPlaceAnyPiece() {
         for (const piece of this.pieces) {
             if (piece === null) continue;
@@ -460,6 +705,14 @@ class BlockBlastGame {
     }
 
     gameOver() {
+        this.isGameOver = true;
+
+        // Stop falling blocks
+        if (this.fallInterval) {
+            clearInterval(this.fallInterval);
+            this.fallInterval = null;
+        }
+
         const gameOverEl = document.getElementById('bbGameOver');
         const finalScoreEl = document.getElementById('bbFinalScore');
 
@@ -471,6 +724,15 @@ class BlockBlastGame {
         this.score = 0;
         this.pieces = [null, null, null];
         this.colorIndex = 0;
+        this.combo = 0;
+        this.level = 1;
+        this.fallSpeed = 8000;
+        this.isGameOver = false;
+
+        // Stop existing interval
+        if (this.fallInterval) {
+            clearInterval(this.fallInterval);
+        }
 
         // Hide game over screen
         const gameOverEl = document.getElementById('bbGameOver');
@@ -478,8 +740,10 @@ class BlockBlastGame {
 
         // Reset grid
         this.createGrid();
+        this.addInitialBlocks();
         this.generateNewPieces();
         this.updateScoreDisplay();
+        this.startFallingBlocks();
     }
 }
 
