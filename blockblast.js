@@ -124,11 +124,11 @@ class BlockBlastGame {
         this.init();
     }
 
-    init() {
+    async init() {
         this.initAudio();
         this.loadGameMode();
         this.applyModeSettings();
-        this.loadUserAndSyncScore();
+        await this.loadUserAndSyncScore();
         this.createGrid();
         this.addInitialBlocks();
         this.generateNewPieces();
@@ -142,6 +142,8 @@ class BlockBlastGame {
         try {
             // Get user from authManager
             const user = window.authManager?.getUser();
+            console.log('Block Blast: User loaded:', user?.id);
+
             if (user && user.id) {
                 this.userId = user.id;
                 await this.loadScoreFromCloud();
@@ -153,35 +155,46 @@ class BlockBlastGame {
 
     // Load high score from Supabase
     async loadScoreFromCloud() {
-        if (!this.userId || !window.supabaseClient) return;
+        if (!this.userId || !window.supabaseClient) {
+            console.log('Block Blast: Cannot load score - no userId or supabaseClient');
+            return;
+        }
 
         try {
+            console.log('Block Blast: Loading score for user:', this.userId);
+
             const { data, error } = await window.supabaseClient
                 .from('game_scores')
                 .select('high_score')
                 .eq('user_id', this.userId)
                 .eq('game_name', 'blockblast')
-                .single();
+                .maybeSingle();
 
-            if (error && error.code !== 'PGRST116') {
-                // PGRST116 = no rows found, which is fine for new users
+            if (error) {
                 console.error('Error loading score:', error);
                 return;
             }
 
-            if (data && data.high_score) {
+            console.log('Block Blast: Cloud data received:', data);
+
+            if (data && data.high_score !== null) {
                 const cloudScore = parseInt(data.high_score);
+                console.log('Block Blast: Cloud score:', cloudScore, 'Local score:', this.highScore);
+
                 // Use the higher score between local and cloud
                 if (cloudScore > this.highScore) {
                     this.highScore = cloudScore;
                     localStorage.setItem('evan_bb_highscore', this.highScore);
                     this.updateScoreDisplay();
+                    console.log('Block Blast: Updated to cloud score:', this.highScore);
                 } else if (this.highScore > cloudScore) {
                     // Local score is higher, sync it to cloud
                     await this.saveScoreToCloud();
+                    console.log('Block Blast: Synced local score to cloud');
                 }
             } else if (this.highScore > 0) {
                 // No cloud score but we have local score, save it
+                console.log('Block Blast: No cloud score, saving local score');
                 await this.saveScoreToCloud();
             }
         } catch (error) {
@@ -191,12 +204,16 @@ class BlockBlastGame {
 
     // Save high score to Supabase
     async saveScoreToCloud() {
-        if (!this.userId || !window.supabaseClient || this.syncingScore) return;
+        if (!this.userId || !window.supabaseClient || this.syncingScore) {
+            console.log('Block Blast: Cannot save - no userId, client, or already syncing');
+            return;
+        }
 
         this.syncingScore = true;
+        console.log('Block Blast: Saving score to cloud:', this.highScore);
 
         try {
-            const { error } = await window.supabaseClient
+            const { data, error } = await window.supabaseClient
                 .from('game_scores')
                 .upsert({
                     user_id: this.userId,
@@ -205,10 +222,13 @@ class BlockBlastGame {
                     updated_at: new Date().toISOString()
                 }, {
                     onConflict: 'user_id,game_name'
-                });
+                })
+                .select();
 
             if (error) {
                 console.error('Error saving score:', error);
+            } else {
+                console.log('Block Blast: Score saved successfully:', data);
             }
         } catch (error) {
             console.error('Error saving score to cloud:', error);
