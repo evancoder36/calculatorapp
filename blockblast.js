@@ -6,6 +6,8 @@ class BlockBlastGame {
         this.grid = [];
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('evan_bb_highscore')) || 0;
+        this.userId = null;
+        this.syncingScore = false;
         this.pieces = [null, null, null];
         this.selectedPiece = null;
         this.selectedPieceIndex = -1;
@@ -126,12 +128,93 @@ class BlockBlastGame {
         this.initAudio();
         this.loadGameMode();
         this.applyModeSettings();
+        this.loadUserAndSyncScore();
         this.createGrid();
         this.addInitialBlocks();
         this.generateNewPieces();
         this.updateScoreDisplay();
         this.bindEvents();
         this.startFallingBlocks();
+    }
+
+    // Load user ID and sync score from Supabase
+    async loadUserAndSyncScore() {
+        try {
+            // Get user from authManager
+            const user = window.authManager?.getUser();
+            if (user && user.id) {
+                this.userId = user.id;
+                await this.loadScoreFromCloud();
+            }
+        } catch (error) {
+            console.error('Error loading user for score sync:', error);
+        }
+    }
+
+    // Load high score from Supabase
+    async loadScoreFromCloud() {
+        if (!this.userId || !window.supabaseClient) return;
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('game_scores')
+                .select('high_score')
+                .eq('user_id', this.userId)
+                .eq('game_name', 'blockblast')
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                // PGRST116 = no rows found, which is fine for new users
+                console.error('Error loading score:', error);
+                return;
+            }
+
+            if (data && data.high_score) {
+                const cloudScore = parseInt(data.high_score);
+                // Use the higher score between local and cloud
+                if (cloudScore > this.highScore) {
+                    this.highScore = cloudScore;
+                    localStorage.setItem('evan_bb_highscore', this.highScore);
+                    this.updateScoreDisplay();
+                } else if (this.highScore > cloudScore) {
+                    // Local score is higher, sync it to cloud
+                    await this.saveScoreToCloud();
+                }
+            } else if (this.highScore > 0) {
+                // No cloud score but we have local score, save it
+                await this.saveScoreToCloud();
+            }
+        } catch (error) {
+            console.error('Error loading score from cloud:', error);
+        }
+    }
+
+    // Save high score to Supabase
+    async saveScoreToCloud() {
+        if (!this.userId || !window.supabaseClient || this.syncingScore) return;
+
+        this.syncingScore = true;
+
+        try {
+            const { error } = await window.supabaseClient
+                .from('game_scores')
+                .upsert({
+                    user_id: this.userId,
+                    game_name: 'blockblast',
+                    high_score: this.highScore,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id,game_name'
+                });
+
+            if (error) {
+                console.error('Error saving score:', error);
+            }
+        } catch (error) {
+            console.error('Error saving score to cloud:', error);
+        } finally {
+            this.syncingScore = false;
+        }
     }
 
     loadGameMode() {
@@ -896,6 +979,9 @@ class BlockBlastGame {
             this.highScore = this.score;
             localStorage.setItem('evan_bb_highscore', this.highScore);
             if (highScoreEl) highScoreEl.textContent = this.highScore;
+
+            // Sync new high score to cloud
+            this.saveScoreToCloud();
         }
     }
 
