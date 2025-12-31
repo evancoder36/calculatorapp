@@ -140,8 +140,8 @@ class BlockBlastGame {
     // Load user ID and sync score from Supabase
     async loadUserAndSyncScore() {
         try {
-            // Get user from authManager
-            const user = window.authManager?.getUser();
+            // Get user from multiple sources (authManager or localStorage)
+            const user = this.getUserData();
             console.log('Block Blast: User loaded:', user?.id);
 
             if (user && user.id) {
@@ -151,6 +151,28 @@ class BlockBlastGame {
         } catch (error) {
             console.error('Error loading user for score sync:', error);
         }
+    }
+
+    // Get user data from authManager or localStorage
+    getUserData() {
+        // Try window.authManager first
+        if (window.authManager?.getUser()) {
+            return window.authManager.getUser();
+        }
+        // Try global authManager
+        if (typeof authManager !== 'undefined' && authManager?.getUser()) {
+            return authManager.getUser();
+        }
+        // Fallback: read directly from localStorage
+        const stored = localStorage.getItem('evan_calc_user');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     // Load high score from Supabase
@@ -1081,6 +1103,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Helper function to get user from multiple sources
+function getUserFromAnySource() {
+    // Try window.authManager first
+    if (window.authManager?.getUser()) {
+        return window.authManager.getUser();
+    }
+    // Try global authManager
+    if (typeof authManager !== 'undefined' && authManager?.getUser()) {
+        return authManager.getUser();
+    }
+    // Fallback: read directly from localStorage
+    const stored = localStorage.getItem('evan_calc_user');
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
+}
+
 // Debug function - run in console: testScoreSync()
 window.testScoreSync = async function() {
     console.log('=== Testing Score Sync ===');
@@ -1089,12 +1133,16 @@ window.testScoreSync = async function() {
     console.log('1. supabaseClient exists:', !!window.supabaseClient);
 
     // Check authManager
-    console.log('2. authManager exists:', !!window.authManager);
+    console.log('2. window.authManager exists:', !!window.authManager);
+    console.log('   global authManager exists:', typeof authManager !== 'undefined');
 
-    // Check user
-    const user = window.authManager?.getUser();
+    // Check user from multiple sources
+    const user = getUserFromAnySource();
     console.log('3. User:', user);
     console.log('   User ID:', user?.id);
+
+    // Also check localStorage directly
+    console.log('4. localStorage evan_calc_user:', localStorage.getItem('evan_calc_user'));
 
     if (!window.supabaseClient) {
         console.error('No supabaseClient!');
