@@ -18,6 +18,10 @@ class BlockBlastGame {
         this.fallSpeed = 8000; // Start with 8 seconds between falls
         this.isGameOver = false;
 
+        // Audio context for sound effects
+        this.audioContext = null;
+        this.soundEnabled = localStorage.getItem('evan_calc_sound') !== 'false';
+
         // Combo messages
         this.comboMessages = [
             { min: 1, text: 'Good!', color: '#10b981' },
@@ -95,12 +99,113 @@ class BlockBlastGame {
     }
 
     init() {
+        this.initAudio();
         this.createGrid();
         this.addInitialBlocks();
         this.generateNewPieces();
         this.updateScoreDisplay();
         this.bindEvents();
         this.startFallingBlocks();
+    }
+
+    initAudio() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('Web Audio API not supported');
+            this.soundEnabled = false;
+        }
+    }
+
+    // Play sound for clearing lines
+    playClearSound(linesCleared, combo) {
+        if (!this.soundEnabled || !this.audioContext) return;
+
+        // Resume audio context if suspended (browser autoplay policy)
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        const now = this.audioContext.currentTime;
+
+        // Base frequency increases with combo
+        const baseFreq = 400 + (combo * 100);
+
+        // Play multiple notes for more lines cleared
+        for (let i = 0; i < Math.min(linesCleared, 4); i++) {
+            setTimeout(() => {
+                this.playTone(baseFreq + (i * 150), 0.15, 'sine', 0.3);
+            }, i * 80);
+        }
+
+        // Add a satisfying "ding" at the end
+        setTimeout(() => {
+            this.playTone(baseFreq + 400, 0.3, 'sine', 0.2);
+        }, linesCleared * 80);
+    }
+
+    // Play sound for placing a piece
+    playPlaceSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        this.playTone(200, 0.08, 'square', 0.15);
+    }
+
+    // Play sound for level up
+    playLevelUpSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+            setTimeout(() => {
+                this.playTone(freq, 0.2, 'sine', 0.25);
+            }, i * 100);
+        });
+    }
+
+    // Play game over sound
+    playGameOverSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
+        const notes = [400, 350, 300, 250];
+        notes.forEach((freq, i) => {
+            setTimeout(() => {
+                this.playTone(freq, 0.3, 'sawtooth', 0.2);
+            }, i * 150);
+        });
+    }
+
+    // Generic tone player
+    playTone(frequency, duration, type = 'sine', volume = 0.3) {
+        if (!this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+
+        const now = this.audioContext.currentTime;
+        gainNode.gain.setValueAtTime(volume, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        oscillator.start(now);
+        oscillator.stop(now + duration);
     }
 
     createGrid() {
@@ -271,6 +376,7 @@ class BlockBlastGame {
             this.level = newLevel;
             this.fallSpeed = Math.max(3000, 8000 - (this.level * 500)); // Min 3 seconds
             this.startFallingBlocks();
+            this.playLevelUpSound();
             this.showComboMessage(`Level ${this.level}!`, '#6366f1');
         }
     }
@@ -517,6 +623,9 @@ class BlockBlastGame {
         // Add score for placing piece
         this.score += cellsPlaced;
 
+        // Play place sound
+        this.playPlaceSound();
+
         // Remove the used piece
         this.pieces[this.selectedPieceIndex] = null;
         this.renderPieces();
@@ -578,6 +687,9 @@ class BlockBlastGame {
         const comboMultiplier = 1 + (this.combo * 0.5);
         const bonus = Math.floor((linesCleared * linesCleared * 10 + baseScore) * comboMultiplier);
         this.score += bonus;
+
+        // Play clear sound
+        this.playClearSound(linesCleared, this.combo);
 
         // Show combo message
         this.showComboFeedback(linesCleared);
@@ -712,6 +824,9 @@ class BlockBlastGame {
             clearInterval(this.fallInterval);
             this.fallInterval = null;
         }
+
+        // Play game over sound
+        this.playGameOverSound();
 
         const gameOverEl = document.getElementById('bbGameOver');
         const finalScoreEl = document.getElementById('bbFinalScore');
