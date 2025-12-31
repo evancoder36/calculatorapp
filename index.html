@@ -1358,7 +1358,7 @@
                         AI Math Assistant
                     </li>
                 </ul>
-                <a href="upgrade.html" class="pricing-btn premium">Upgrade Now</a>
+                <a href="#" id="upgradeBtn" class="pricing-btn premium" onclick="handleUpgradeClick(event)">Upgrade Now</a>
             </div>
         </div>
     </section>
@@ -1491,6 +1491,20 @@
                 });
             });
         });
+
+        // Handle upgrade button click
+        function handleUpgradeClick(event) {
+            event.preventDefault();
+            if (authManager.isAuthenticated()) {
+                // User is signed in, go to upgrade page
+                window.location.href = 'upgrade.html';
+            } else {
+                // User is not signed in, show message
+                alert('Please sign in with your Google account first to upgrade to Premium.');
+                // Scroll to sign in section
+                document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     </script>
 </body>
 </html>
